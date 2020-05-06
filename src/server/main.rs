@@ -12,6 +12,8 @@ use hyper::client::HttpConnector;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{header, Body, Client, Method, Request, Response, Server, StatusCode};
 
+use std::borrow::Borrow;
+
 use server_state::ServerState;
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
@@ -23,10 +25,7 @@ static NOTFOUND: &[u8] = b"Not Found";
 static POST_DATA: &str = r#"{"original": "data"}"#;
 static URL: &str = "http://127.0.0.1:1337/json_api";
 
-lazy_static! {
-    pub static ref STATE: Arc<RwLock<ServerState>> = Arc::new(RwLock::new(ServerState::new()));
-}
-
+type State = Arc<RwLock<ServerState>>;
 
 async fn client_request_response(client: &Client<HttpConnector>) -> Result<Response<Body>> {
     let req = Request::builder()
@@ -82,14 +81,26 @@ async fn api_get_response() -> Result<Response<Body>> {
     Ok(res)
 }
 
+async fn new_game(req: Request<Body>, state: State) -> Result<Response<Body>> {
+    let uuid = state.write().unwrap().new_game();
+    let response = Response::builder()
+        .status(StatusCode::OK)
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(uuid))?;
+    Ok(response)
+}
+
 async fn response_examples(
     req: Request<Body>,
     client: Client<HttpConnector>,
+    state: State,
 ) -> Result<Response<Body>> {
+
     match (req.method(), req.uri().path()) {
         (&Method::GET, "/") | (&Method::GET, "/index.html") => Ok(Response::new(INDEX.into())),
         (&Method::GET, "/test.html") => client_request_response(&client).await,
         (&Method::POST, "/json_api") => api_post_response(req).await,
+        (&Method::POST, "/new") => new_game(req, state).await,
         (&Method::GET, "/json_api") => api_get_response().await,
         _ => {
             // Return 404 not found response.
@@ -110,13 +121,15 @@ async fn main() -> Result<()> {
     // Share a `Client` with all `Service`s
     let client = Client::new();
 
+    let state: State = Arc::new(RwLock::new(ServerState::new()));
     let new_service = make_service_fn(move |_| {
         // Move a clone of `client` into the `service_fn`.
         let client = client.clone();
+        let state = Arc::clone(&state);
         async {
             Ok::<_, GenericError>(service_fn(move |req| {
                 // Clone again to ensure that client outlives this closure.
-                response_examples(req, client.to_owned())
+                response_examples(req, client.to_owned(), Arc::clone(&state))
             }))
         }
     });

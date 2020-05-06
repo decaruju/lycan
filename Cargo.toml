@@ -10,7 +10,7 @@ edition = "2018"
 #client
 sfml = "0.15.1"
 #server
-uuid = "0.8.1"
+uuid = { version = "0.8.1", features = ["v4"] }
 futures = "0.1"
 hyper = "0.13"
 tokio = { version = "0.2", features = ["full"] }

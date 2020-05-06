@@ -1,9 +1,11 @@
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 use lycan::shared::gamestate::Gamestate;
 
 use uuid::Uuid;
 
+#[derive(Debug)]
 pub struct ServerGamestate {
     pub gamestate: Gamestate,
 }
@@ -29,7 +31,10 @@ impl ServerState {
         }
     }
 
-    pub fn new_game(&mut self) {
-        println!("{}", Uuid::new_v4())
+    pub fn new_game(&mut self) -> String {
+        let uuid = Uuid::new_v4().to_string();
+        self.games.insert(uuid.clone(), ServerGamestate::new());
+        println!("{:?}", self.games);
+        uuid
     }
 }
