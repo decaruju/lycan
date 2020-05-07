@@ -48,6 +48,7 @@ impl ServerState {
 
     pub fn join_game(&mut self, game_id: String, player_name: String) -> Option<String> {
         let game = self.games.get_mut(&game_id)?;
+        println!("im in");
         game.add_player(player_name);
         Some(game.dump_players())
     }

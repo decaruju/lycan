@@ -76,25 +76,36 @@ async fn api_get_response() -> Result<Response<Body>> {
     Ok(res)
 }
 
+fn not_found() -> Result<Response<Body>> {
+    return Ok(Response::builder().status(StatusCode::NOT_FOUND).body(Body::empty())?)
+}
+
+fn bad_request() -> Result<Response<Body>> {
+    return Ok(Response::builder().status(StatusCode::BAD_REQUEST).body(Body::empty())?)
+}
+
 async fn join_game(req: Request<Body>, state: State) -> Result<Response<Body>> {
     let whole_body = hyper::body::aggregate(req).await?;
     let data: serde_json::Value = serde_json::from_reader(whole_body.reader())?;
 
     if let serde_json::Value::Object(map) = data {
         if let (Some(serde_json::Value::String(game_id)), Some(serde_json::Value::String(player_name))) = (map.get("game"), map.get("player_name")) {
-            let game_id = state.write().unwrap().join_game(game_id.clone(), player_name.clone()).unwrap();
-
-            let response = Response::builder()
-                .status(StatusCode::OK)
-                .header(header::CONTENT_TYPE, "application/json")
-                .body(Body::from(game_id))?;
-            return Ok(response)
+            let mut state = state.write().unwrap();
+            match state.join_game(game_id.clone(), player_name.clone()) {
+                Some(game_id) => {
+                    let response = Response::builder()
+                        .status(StatusCode::OK)
+                        .header(header::CONTENT_TYPE, "application/json")
+                        .body(Body::from(game_id))?;
+                    return Ok(response)
+                },
+                None => {
+                    return not_found();
+                },
+            };
         }
     }
-    let response = Response::builder()
-        .status(StatusCode::BAD_REQUEST)
-        .body(Body::empty())?;
-    Ok(response)
+    return bad_request();
 }
 
 async fn new_game(req: Request<Body>, state: State) -> Result<Response<Body>> {
