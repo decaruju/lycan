@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-
 mod server_state;
 
 use std::{
@@ -11,8 +8,6 @@ use futures_util::{stream, StreamExt};
 use hyper::client::HttpConnector;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{header, Body, Client, Method, Request, Response, Server, StatusCode};
-
-use std::borrow::Borrow;
 
 use server_state::ServerState;
 
@@ -81,6 +76,27 @@ async fn api_get_response() -> Result<Response<Body>> {
     Ok(res)
 }
 
+async fn join_game(req: Request<Body>, state: State) -> Result<Response<Body>> {
+    let whole_body = hyper::body::aggregate(req).await?;
+    let data: serde_json::Value = serde_json::from_reader(whole_body.reader())?;
+
+    if let serde_json::Value::Object(map) = data {
+        if let (Some(serde_json::Value::String(game_id)), Some(serde_json::Value::String(player_name))) = (map.get("game"), map.get("player_name")) {
+            let game_id = state.write().unwrap().join_game(game_id.clone(), player_name.clone()).unwrap();
+
+            let response = Response::builder()
+                .status(StatusCode::OK)
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(game_id))?;
+            return Ok(response)
+        }
+    }
+    let response = Response::builder()
+        .status(StatusCode::BAD_REQUEST)
+        .body(Body::empty())?;
+    Ok(response)
+}
+
 async fn new_game(req: Request<Body>, state: State) -> Result<Response<Body>> {
     let uuid = state.write().unwrap().new_game();
     let response = Response::builder()
@@ -99,7 +115,7 @@ async fn response_examples(
     match (req.method(), req.uri().path()) {
         (&Method::GET, "/") | (&Method::GET, "/index.html") => Ok(Response::new(INDEX.into())),
         (&Method::GET, "/test.html") => client_request_response(&client).await,
-        (&Method::POST, "/json_api") => api_post_response(req).await,
+        (&Method::POST, "/join") => join_game(req, state).await,
         (&Method::POST, "/new") => new_game(req, state).await,
         (&Method::GET, "/json_api") => api_get_response().await,
         _ => {

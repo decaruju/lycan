@@ -16,7 +16,15 @@ impl ServerGamestate {
     }
 
     pub fn new() -> ServerGamestate {
-        ServerGamestate{ gamestate: Gamestate{ test:String::from("test") } }
+        ServerGamestate{ gamestate: Gamestate{ players: vec![], test: String::from("test") } }
+    }
+
+    pub fn add_player(&mut self, player_name: String) {
+        self.gamestate.add_player(player_name)
+    }
+
+    pub fn dump_players(&self) -> String {
+        format!("{:?}", self.gamestate.players.iter().map(|player| player.name.clone()))
     }
 }
 
@@ -36,5 +44,11 @@ impl ServerState {
         self.games.insert(uuid.clone(), ServerGamestate::new());
         println!("{:?}", self.games);
         uuid
+    }
+
+    pub fn join_game(&mut self, game_id: String, player_name: String) -> Option<String> {
+        let game = self.games.get_mut(&game_id)?;
+        game.add_player(player_name);
+        Some(game.dump_players())
     }
 }
