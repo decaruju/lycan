@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-
 mod server_state;
 
 use std::{
@@ -23,10 +20,7 @@ static NOTFOUND: &[u8] = b"Not Found";
 static POST_DATA: &str = r#"{"original": "data"}"#;
 static URL: &str = "http://127.0.0.1:1337/json_api";
 
-lazy_static! {
-    pub static ref STATE: Arc<RwLock<ServerState>> = Arc::new(RwLock::new(ServerState::new()));
-}
-
+type State = Arc<RwLock<ServerState>>;
 
 async fn client_request_response(client: &Client<HttpConnector>) -> Result<Response<Body>> {
     let req = Request::builder()
@@ -82,14 +76,58 @@ async fn api_get_response() -> Result<Response<Body>> {
     Ok(res)
 }
 
+fn not_found() -> Result<Response<Body>> {
+    return Ok(Response::builder().status(StatusCode::NOT_FOUND).body(Body::empty())?)
+}
+
+fn bad_request() -> Result<Response<Body>> {
+    return Ok(Response::builder().status(StatusCode::BAD_REQUEST).body(Body::empty())?)
+}
+
+async fn join_game(req: Request<Body>, state: State) -> Result<Response<Body>> {
+    let whole_body = hyper::body::aggregate(req).await?;
+    let data: serde_json::Value = serde_json::from_reader(whole_body.reader())?;
+
+    if let serde_json::Value::Object(map) = data {
+        if let (Some(serde_json::Value::String(game_id)), Some(serde_json::Value::String(player_name))) = (map.get("game"), map.get("player_name")) {
+            let mut state = state.write().unwrap();
+            match state.join_game(game_id.clone(), player_name.clone()) {
+                Some(game_id) => {
+                    let response = Response::builder()
+                        .status(StatusCode::OK)
+                        .header(header::CONTENT_TYPE, "application/json")
+                        .body(Body::from(game_id))?;
+                    return Ok(response)
+                },
+                None => {
+                    return not_found();
+                },
+            };
+        }
+    }
+    return bad_request();
+}
+
+async fn new_game(req: Request<Body>, state: State) -> Result<Response<Body>> {
+    let uuid = state.write().unwrap().new_game();
+    let response = Response::builder()
+        .status(StatusCode::OK)
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(uuid))?;
+    Ok(response)
+}
+
 async fn response_examples(
     req: Request<Body>,
     client: Client<HttpConnector>,
+    state: State,
 ) -> Result<Response<Body>> {
+
     match (req.method(), req.uri().path()) {
         (&Method::GET, "/") | (&Method::GET, "/index.html") => Ok(Response::new(INDEX.into())),
         (&Method::GET, "/test.html") => client_request_response(&client).await,
-        (&Method::POST, "/json_api") => api_post_response(req).await,
+        (&Method::POST, "/join") => join_game(req, state).await,
+        (&Method::POST, "/new") => new_game(req, state).await,
         (&Method::GET, "/json_api") => api_get_response().await,
         _ => {
             // Return 404 not found response.
@@ -110,13 +148,15 @@ async fn main() -> Result<()> {
     // Share a `Client` with all `Service`s
     let client = Client::new();
 
+    let state: State = Arc::new(RwLock::new(ServerState::new()));
     let new_service = make_service_fn(move |_| {
         // Move a clone of `client` into the `service_fn`.
         let client = client.clone();
+        let state = Arc::clone(&state);
         async {
             Ok::<_, GenericError>(service_fn(move |req| {
                 // Clone again to ensure that client outlives this closure.
-                response_examples(req, client.to_owned())
+                response_examples(req, client.to_owned(), Arc::clone(&state))
             }))
         }
     });
