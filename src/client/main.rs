@@ -40,11 +40,7 @@ fn main() {
     );
     window.set_vertical_sync_enabled(true);
 
-    let mut ball = CircleShape::default();
-    ball.set_radius(20.);
-    ball.set_fill_color(Color::BLACK);
-    ball.set_origin((20. / 2., 20. / 2.));
-    ball.set_position((game_width as f32 / 2., game_height as f32 / 2.));
+    let mut theball = ball::the_ball();
 
     loop {
         while let Some(event) = window.poll_event() {
@@ -53,7 +49,7 @@ fn main() {
                 | Event::KeyPressed {
                     code: Key::Escape, ..
                 } => return,
-                Event::MouseMoved { x, y } => ball.set_position((x as f32, y as f32)),
+                Event::MouseMoved { x, y } => theball.set_position((x as f32, y as f32)),
                 _ => {}
             }
         }
@@ -61,7 +57,7 @@ fn main() {
         if Key::Space.is_pressed() {}
 
         window.clear(Color::BLUE);
-        window.draw(&ball);
+        window.draw(&theball);
         window.display();
     }
 }

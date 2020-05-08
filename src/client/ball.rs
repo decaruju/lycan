@@ -5,7 +5,7 @@ use sfml::{
     window::{ContextSettings, Event, Key, Style},
 };
 
-fn the_ball() -> CircleShape {
+pub fn the_ball<'a>() -> CircleShape<'a> {
     let mut ball = CircleShape::default();
     ball.set_radius(20.);
     ball.set_fill_color(Color::BLACK);
