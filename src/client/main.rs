@@ -36,8 +36,12 @@ fn main() {
         ..Default::default()
     };
 
-    let mut window =
-        RenderWindow::new(setting.resolution, "Lycan", Style::CLOSE, &context_settings);
+    let mut window = RenderWindow::new(
+        setting.resolution,
+        "Lycan",
+        Style::DEFAULT,
+        &context_settings,
+    );
     window.set_vertical_sync_enabled(true);
 
     loop {
