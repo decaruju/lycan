@@ -22,6 +22,34 @@ fn bad_request() -> Result<Response<Body>> {
     return Ok(Response::builder().status(StatusCode::BAD_REQUEST).body(Body::empty())?)
 }
 
+async fn update(req: Request<Body>, state: State) -> Result<Response<Body>> {
+    let whole_body = hyper::body::aggregate(req).await?;
+    let data: serde_json::Value = serde_json::from_reader(whole_body.reader())?;
+
+    if let serde_json::Value::Object(map) = data {
+        if let (Some(serde_json::Value::String(game_id)), Some(serde_json::Value::String(player_id)), Some(serde_json::Value::Array(position))) = (map.get("game"), map.get("player_id"), map.get("position")) {
+            let pos_x = position.get(0);
+            let pos_y = position.get(1);
+            if let (Some(serde_json::Value::Number(pos_x)), Some(serde_json::Value::Number(pos_y))) = (pos_x, pos_y) {
+                let mut state = state.write().unwrap();
+                match state.update(game_id.clone(), player_id.clone(), (pos_x.as_u64().unwrap(), pos_y.as_u64().unwrap())) {
+                    Some(game_state) => {
+                        let response = Response::builder()
+                            .status(StatusCode::OK)
+                            .header(header::CONTENT_TYPE, "application/json")
+                            .body(Body::from(game_state))?;
+                        return Ok(response)
+                    },
+                    None => {
+                        return not_found();
+                    },
+                };
+            }
+        }
+    }
+    return bad_request();
+}
+
 async fn join_game(req: Request<Body>, state: State) -> Result<Response<Body>> {
     let whole_body = hyper::body::aggregate(req).await?;
     let data: serde_json::Value = serde_json::from_reader(whole_body.reader())?;
@@ -62,6 +90,7 @@ async fn router(
 
     match (req.method(), req.uri().path()) {
         (&Method::POST, "/join") => join_game(req, state).await,
+        (&Method::POST, "/update") => update(req, state).await,
         (&Method::POST, "/new") => new_game(req, state).await,
         _ => not_found(),
     }
