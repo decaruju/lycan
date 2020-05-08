@@ -1,12 +1,18 @@
 use lycan::shared::gamestate::Gamestate;
 extern crate sfml;
-
 use sfml::{
     graphics::{CircleShape, Color, RenderTarget, RenderWindow, Shape, Transformable},
     window::{ContextSettings, Event, Key, Style},
 };
 
-mod ball;
+mod game;
+mod main_menu;
+mod settings;
+
+use game::{start_game, GameResult};
+use main_menu::{main_menu, MenuChoice};
+
+use settings::Settings;
 
 struct ClientGamestate {
     pub gamestate: Gamestate,
@@ -15,49 +21,32 @@ struct ClientGamestate {
 impl ClientGamestate {
     fn load(string: String) -> ClientGamestate {
         ClientGamestate {
-            gamestate: Gamestate { test: string },
+            gamestate: Gamestate::default(),
         }
     }
 }
 
 fn main() {
     let gamestate = ClientGamestate::load(String::from("test"));
-    println!("{}", gamestate.gamestate.test);
 
-    let game_width = 800;
-    let game_height = 600;
+    let mut setting = Settings::default();
 
     let context_settings = ContextSettings {
         antialiasing_level: 0,
         ..Default::default()
     };
 
-    let mut window = RenderWindow::new(
-        (game_width, game_height),
-        "Lycan",
-        Style::CLOSE,
-        &context_settings,
-    );
+    let mut window =
+        RenderWindow::new(setting.resolution, "Lycan", Style::CLOSE, &context_settings);
     window.set_vertical_sync_enabled(true);
 
-    let mut theball = ball::the_ball();
-
     loop {
-        while let Some(event) = window.poll_event() {
-            match event {
-                Event::Closed
-                | Event::KeyPressed {
-                    code: Key::Escape, ..
-                } => return,
-                Event::MouseMoved { x, y } => theball.set_position((x as f32, y as f32)),
-                _ => {}
-            }
+        match main_menu(&mut setting, &mut window) {
+            MenuChoice::Quit => break,
+            MenuChoice::StartGame => match start_game(&mut window) {
+                GameResult::Menu => continue,
+                GameResult::Quit => break,
+            },
         }
-
-        if Key::Space.is_pressed() {}
-
-        window.clear(Color::BLUE);
-        window.draw(&theball);
-        window.display();
     }
 }
