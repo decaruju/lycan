@@ -6,6 +6,8 @@ use sfml::{
     window::{ContextSettings, Event, Key, Style},
 };
 
+mod ball;
+
 struct ClientGamestate {
     pub gamestate: Gamestate,
 }
