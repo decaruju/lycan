@@ -18,7 +18,7 @@ impl ServerGamestate {
     }
 
     pub fn add_player(&mut self, uuid: String, player_name: String) {
-        self.gamestate.players.insert(uuid, Player{ name: player_name, position: (0, 0) });
+        self.gamestate.players.insert(uuid, Player{ name: player_name, position: (0.0, 0.0) });
     }
 
     pub fn dump_players(&self) -> String {
@@ -31,7 +31,7 @@ impl ServerGamestate {
         )
     }
 
-    pub fn update_player(&mut self, player_id: String, position: (u64, u64)) -> Option<()>{
+    pub fn update_player(&mut self, player_id: String, position: (f32, f32)) -> Option<()>{
         let player = self.gamestate.players.get_mut(&player_id)?;
         player.position = position;
         Some(())
@@ -62,9 +62,9 @@ impl ServerState {
         Some(uuid)
     }
 
-    pub fn update(&mut self, game_id: String, player_id: String, position: (u64, u64)) -> Option<String> {
+    pub fn update(&mut self, game_id: String, player_id: String, position: (f32, f32)) -> Option<&Gamestate> {
         let game = self.games.get_mut(&game_id)?;
         game.update_player(player_id, position)?;
-        Some(game.dump_players())
+        Some(&game.gamestate)
     }
 }

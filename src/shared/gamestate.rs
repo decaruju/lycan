@@ -3,15 +3,15 @@ use std::fmt::Debug;
 
 use serde::{Serialize, Deserialize};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Gamestate {
     pub players: HashMap<String, Player>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Player {
     pub name: String,
-    pub position: (u64, u64),
+    pub position: (f32, f32),
 }
 
 #[derive(Debug)]
@@ -28,4 +28,15 @@ impl Default for Gamestate {
 
 struct NewResponse {
     pub game_id: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateResponse {
+    pub players: HashMap<String, SharedPlayer>
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SharedPlayer {
+    pub name: String,
+    pub position: (f32, f32),
 }

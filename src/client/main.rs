@@ -1,9 +1,12 @@
 mod http;
-use lycan::shared::gamestate::{Gamestate, Player};
+mod client_state;
 extern crate sfml;
 use sfml::{
     graphics::{RenderWindow},
     window::{ContextSettings, Style},
+};
+use std::{
+    sync::{Arc, RwLock},
 };
 
 mod game;
@@ -12,38 +15,25 @@ mod settings;
 
 use game::{start_game, GameResult};
 use main_menu::{main_menu, MenuChoice};
+use client_state::{ClientGamestate};
 
 use settings::Settings;
 
-struct ClientGamestate {
-    pub gamestate: Gamestate,
-    pub player_id: Option<String>,
-    pub game_id: Option<String>,
-}
-
-impl ClientGamestate {
-    fn load(_string: String) -> ClientGamestate {
-        ClientGamestate {
-            gamestate: Gamestate::default(),
-            player_id: None,
-            game_id: None,
-        }
-    }
-
-    fn get_player(&mut self) -> Option<&mut Player> {
-        match &self.player_id {
-            Some(player_id) => Some(self.gamestate.players.get_mut(player_id)?),
-            None => None,
-        }
-    }
-}
 
 fn main() {
-    let mut gamestate = ClientGamestate::load(String::from("test"));
+    let mut gamestate: Arc<RwLock<ClientGamestate>> = Arc::new(RwLock::new(ClientGamestate::load(String::from("test"))));
     match http::new_game() {
         Ok(game_id) => {
             println!("{}", game_id);
-            gamestate.game_id = Some(game_id);
+            match http::join_game(&game_id) {
+                Ok(player_id) => {
+                    println!("{}", player_id);
+                    let mut gamestate = gamestate.write().unwrap();
+                    gamestate.set_game(game_id);
+                    gamestate.set_player(player_id);
+                },
+                Err(err) => println!("{}", err),
+            }
         },
         Err(err) => println!("{}", err),
     }
@@ -66,7 +56,7 @@ fn main() {
     loop {
         match main_menu(&mut setting, &mut window) {
             MenuChoice::Quit => break,
-            MenuChoice::StartGame => match start_game(&mut window) {
+            MenuChoice::StartGame => match start_game(&mut window, Arc::clone(&gamestate)) {
                 GameResult::Menu => continue,
                 GameResult::Quit => break,
             },
