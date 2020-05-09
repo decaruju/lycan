@@ -1,5 +1,8 @@
 use sfml::{
-    graphics::{CircleShape, Color, RenderTarget, RenderWindow, Shape, Transformable},
+    graphics::{
+        CircleShape, Color, Rect, RectangleShape, RenderTarget, RenderWindow, Shape, Transformable,
+    },
+    system::Vector2f,
     window::{ContextSettings, Event, Key, Style},
 };
 
@@ -8,6 +11,24 @@ use crate::Settings;
 pub enum MenuChoice {
     StartGame,
     Quit,
+}
+
+struct MenuButton<'a> {
+    title: String,
+    rect: Rect<f32>,
+    texture: RectangleShape<'a>,
+}
+
+impl<'a> MenuButton<'a> {
+    fn new(title: String) -> MenuButton<'a> {
+        let size = Vector2f::from((30., 10.));
+        let pos = Vector2f::from((0., 0.));
+        MenuButton {
+            title: title,
+            rect: Rect::from_vecs(size, pos),
+            texture: RectangleShape::with_size(size),
+        }
+    }
 }
 
 pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoice {
@@ -26,6 +47,10 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
 
         if Key::S.is_pressed() {
             return MenuChoice::StartGame;
+        }
+
+        if Key::Space.is_pressed() {
+            println!("{:?}", window.size());
         }
         window.clear(Color::BLUE);
         window.draw(&theball);
