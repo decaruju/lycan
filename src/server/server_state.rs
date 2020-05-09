@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-use lycan::shared::gamestate::Gamestate;
+use lycan::shared::gamestate::{Gamestate, Player};
 
 use uuid::Uuid;
 
@@ -12,25 +12,39 @@ pub struct ServerGamestate {
 
 impl ServerGamestate {
     pub fn new() -> ServerGamestate {
-        ServerGamestate{ gamestate: Gamestate::default() }
+        ServerGamestate {
+            gamestate: Gamestate::default(),
+        }
     }
 
-    pub fn add_player(&mut self, player_name: String) {
-        self.gamestate.add_player(player_name)
+    pub fn add_player(&mut self, uuid: String, player_name: String) {
+        self.gamestate.players.insert(uuid, Player{ name: player_name, position: (0.0, 0.0) });
     }
 
     pub fn dump_players(&self) -> String {
-        format!("{:?}", self.gamestate.players.iter().map(|player| player.name.clone()))
+        format!(
+            "{:?}",
+            self.gamestate
+                .players
+                .iter()
+                .map(|(_uuid, player)| player.name.clone())
+        )
+    }
+
+    pub fn update_player(&mut self, player_id: String, position: (f32, f32)) -> Option<()>{
+        let player = self.gamestate.players.get_mut(&player_id)?;
+        player.position = position;
+        Some(())
     }
 }
 
 pub struct ServerState {
-    games: HashMap<String, ServerGamestate>
+    games: HashMap<String, ServerGamestate>,
 }
 
 impl ServerState {
     pub fn new() -> ServerState {
-        ServerState{
+        ServerState {
             games: HashMap::new(),
         }
     }
@@ -43,7 +57,14 @@ impl ServerState {
 
     pub fn join_game(&mut self, game_id: String, player_name: String) -> Option<String> {
         let game = self.games.get_mut(&game_id)?;
-        game.add_player(player_name);
-        Some(game.dump_players())
+        let uuid = Uuid::new_v4().to_string();
+        game.add_player(uuid.clone(), player_name);
+        Some(uuid)
+    }
+
+    pub fn update(&mut self, game_id: String, player_id: String, position: (f32, f32)) -> Option<&Gamestate> {
+        let game = self.games.get_mut(&game_id)?;
+        game.update_player(player_id, position)?;
+        Some(&game.gamestate)
     }
 }

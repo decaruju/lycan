@@ -1,8 +1,12 @@
-use lycan::shared::gamestate::Gamestate;
+mod http;
+mod client_state;
 extern crate sfml;
 use sfml::{
-    graphics::{CircleShape, Color, RenderTarget, RenderWindow, Shape, Transformable},
-    window::{ContextSettings, Event, Key, Style},
+    graphics::{RenderWindow},
+    window::{ContextSettings, Style},
+};
+use std::{
+    sync::{Arc, RwLock},
 };
 
 mod game;
@@ -11,23 +15,28 @@ mod settings;
 
 use game::{start_game, GameResult};
 use main_menu::{main_menu, MenuChoice};
+use client_state::{ClientGamestate};
 
 use settings::Settings;
 
-struct ClientGamestate {
-    pub gamestate: Gamestate,
-}
-
-impl ClientGamestate {
-    fn load(string: String) -> ClientGamestate {
-        ClientGamestate {
-            gamestate: Gamestate::default(),
-        }
-    }
-}
 
 fn main() {
-    let gamestate = ClientGamestate::load(String::from("test"));
+    let mut gamestate: Arc<RwLock<ClientGamestate>> = Arc::new(RwLock::new(ClientGamestate::load(String::from("test"))));
+    match http::new_game() {
+        Ok(game_id) => {
+            println!("{}", game_id);
+            match http::join_game(&game_id) {
+                Ok(player_id) => {
+                    println!("{}", player_id);
+                    let mut gamestate = gamestate.write().unwrap();
+                    gamestate.set_game(game_id);
+                    gamestate.set_player(player_id);
+                },
+                Err(err) => println!("{}", err),
+            }
+        },
+        Err(err) => println!("{}", err),
+    }
 
     let mut setting = Settings::default();
 
@@ -47,7 +56,7 @@ fn main() {
     loop {
         match main_menu(&mut setting, &mut window) {
             MenuChoice::Quit => break,
-            MenuChoice::StartGame => match start_game(&mut window) {
+            MenuChoice::StartGame => match start_game(&mut window, Arc::clone(&gamestate)) {
                 GameResult::Menu => continue,
                 GameResult::Quit => break,
             },
