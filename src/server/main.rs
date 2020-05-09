@@ -1,5 +1,6 @@
 mod server_state;
 
+use std::collections::HashMap;
 use std::{
     sync::{Arc, RwLock},
 };
@@ -79,7 +80,7 @@ async fn new_game(_req: Request<Body>, state: State) -> Result<Response<Body>> {
     let response = Response::builder()
         .status(StatusCode::OK)
         .header(header::CONTENT_TYPE, "application/json")
-        .body(Body::from(uuid))?;
+        .body(Body::from(serde_json::json!({ "game_id": uuid }).to_string()))?;
     Ok(response)
 }
 

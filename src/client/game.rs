@@ -1,9 +1,7 @@
 use sfml::{
     graphics::{CircleShape, Color, RenderTarget, RenderWindow, Shape, Transformable},
-    window::{ContextSettings, Event, Key, Style},
+    window::{Event, Key},
 };
-
-use crate::Settings;
 
 pub enum GameResult {
     Menu,

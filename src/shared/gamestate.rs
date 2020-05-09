@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
 
+use serde::{Serialize, Deserialize};
+
 #[derive(Debug)]
 pub struct Gamestate {
     pub players: HashMap<String, Player>,
@@ -22,4 +24,8 @@ impl Default for Gamestate {
     fn default() -> Self {
         Gamestate{players: HashMap::new()}
     }
+}
+
+struct NewResponse {
+    pub game_id: String,
 }
