@@ -1,9 +1,10 @@
 use sfml::{
     graphics::{
-        CircleShape, Color, Rect, RectangleShape, RenderTarget, RenderWindow, Shape, Transformable,
+        CircleShape, Color, Drawable, Rect, RectangleShape, RenderStates, RenderTarget,
+        RenderWindow, Shape, Transformable,
     },
     system::Vector2f,
-    window::{ContextSettings, Event, Key, Style},
+    window::{mouse, ContextSettings, Event, Key, Style},
 };
 
 use crate::Settings;
@@ -15,24 +16,32 @@ pub enum MenuChoice {
 
 struct MenuButton<'a> {
     title: String,
-    rect: Rect<f32>,
     texture: RectangleShape<'a>,
 }
 
 impl<'a> MenuButton<'a> {
-    fn new(title: String) -> MenuButton<'a> {
+    fn new(title: String) -> Self {
         let size = Vector2f::from((30., 10.));
-        let pos = Vector2f::from((0., 0.));
-        MenuButton {
+        Self {
             title: title,
-            rect: Rect::from_vecs(size, pos),
             texture: RectangleShape::with_size(size),
         }
     }
 }
 
+impl<'a> Drawable for MenuButton<'a> {
+    fn draw<'s: 'shader, 'texture, 'shader, 'shader_texture>(
+        &'s self,
+        render_target: &mut dyn RenderTarget,
+        _: RenderStates<'texture, 'shader, 'shader_texture>,
+    ) {
+        render_target.draw(&self.texture);
+    }
+}
+
 pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoice {
     let mut theball = the_ball();
+    let mut startgame_button = MenuButton::new(String::from("start the game"));
     loop {
         while let Some(event) = window.poll_event() {
             match event {
@@ -49,10 +58,17 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
             return MenuChoice::StartGame;
         }
 
-        if Key::Space.is_pressed() {
-            println!("{:?}", window.size());
+        if mouse::Button::Left.is_pressed() {
+            println!("{:?}", mouse::desktop_position());
         }
+
+        if Key::Space.is_pressed() {
+            println!("{:?}", window.default_view());
+        }
+        let size = window.size();
+        startgame_button.texture.set_origin((200., -200.));
         window.clear(Color::BLUE);
+        window.draw(&startgame_button);
         window.draw(&theball);
         window.display();
     }
