@@ -66,7 +66,6 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
             println!("{:?}", window.default_view());
         }
         let size = window.size();
-        println!("{:?}", startgame_button.texture.origin());
         startgame_button
             .texture
             .set_position(((size.x as f32) / 2.0, (size.y as f32) / 2.0));
