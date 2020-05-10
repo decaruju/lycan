@@ -59,14 +59,15 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
         }
 
         if mouse::Button::Left.is_pressed() {
-            println!("{:?}", mouse::desktop_position());
+            println!("{:?}", window.mouse_position());
         }
 
         if Key::Space.is_pressed() {
             println!("{:?}", window.default_view());
         }
         let size = window.size();
-        startgame_button.texture.set_origin((200., -200.));
+        println!("{:?}", startgame_button.texture.origin());
+        startgame_button.texture.set_position(((size.x as f32)/2.0, (size.y as f32)/2.0));
         window.clear(Color::BLUE);
         window.draw(&startgame_button);
         window.draw(&theball);

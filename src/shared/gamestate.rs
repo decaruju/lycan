@@ -14,6 +14,13 @@ pub struct Player {
     pub position: (f32, f32),
 }
 
+impl Player {
+    pub fn move_player(&mut self, direction: (f32, f32)) {
+        self.position.0 += direction.0;
+        self.position.1 += direction.1;
+    }
+}
+
 #[derive(Debug)]
 pub struct Position {
     x: u32,

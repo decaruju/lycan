@@ -42,9 +42,9 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
                     code: Key::Escape, ..
                 } => return GameResult::Quit,
                 Event::MouseMoved { x, y } => {
-                    let gamestate = Arc::clone(&gamestate);
-                    let mut gamestate = gamestate.write().unwrap();
-                    gamestate.get_mut_player().unwrap().position = (x as f32, y as f32);
+                    // let gamestate = Arc::clone(&gamestate);
+                    // let mut gamestate = gamestate.write().unwrap();
+                    // gamestate.get_mut_player().unwrap().position = (x as f32, y as f32);
                 }
                 _ => {}
             }
@@ -54,6 +54,26 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
             return GameResult::Menu;
         }
 
+        let mut movement = (0.0, 0.0);
+
+        if Key::A.is_pressed() {
+            movement.0 -= 10.0;
+        }
+        if Key::D.is_pressed() {
+            movement.0 += 10.0;
+        }
+        if Key::W.is_pressed() {
+            movement.1 -= 10.0;
+        }
+        if Key::S.is_pressed() {
+            movement.1 += 10.0;
+        }
+
+        {
+            let gamestate = Arc::clone(&gamestate);
+            let mut gamestate = gamestate.write().unwrap();
+            gamestate.get_mut_player().unwrap().move_player(movement);
+        }
 
         window.clear(Color::RED);
         for (id, player) in Arc::clone(&gamestate).read().unwrap().get_players() {
