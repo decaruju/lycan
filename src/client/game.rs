@@ -72,8 +72,15 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
         {
             let mut gamestate = gamestate.write().unwrap();
 
-            let mut player = gamestate.get_mut_player().unwrap();
-            player.move_player(movement);
+            {
+                let mut player = gamestate.get_mut_player().unwrap();
+                player.move_player(movement);
+            }
+            if gamestate.player_in_wall() {
+                let mut player = gamestate.get_mut_player().unwrap();
+                player.move_player((-movement.0, -movement.1))
+            }
+            let player = gamestate.get_player().unwrap();
             center_view(window, player);
         }
 
@@ -119,19 +126,22 @@ pub fn draw(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamestate>>) 
 }
 
 pub fn draw_room(window: &mut RenderWindow, room: &Room) {
-    for i in 0..32 {
-        for j in 0..32 {
-            let x0 = (i * 32 + room.position.0*32*32) as f32;
-            let y0 = (j * 32 + room.position.1*32*32) as f32;
-            draw_rect(window, x0, y0, 32.0, 32.0);
+    for i in 0..16 {
+        for j in 0..16 {
+            let x0 = (i * 32 + room.position.0*16*32) as f32;
+            let y0 = (j * 32 + room.position.1*16*32) as f32;
+            draw_tile(window, x0, y0, 32.0, 32.0, room.is_wall((i, j)));
         }
     }
 }
 
-pub fn draw_rect(window: &mut RenderWindow, x0: f32, y0: f32, width: f32, height: f32) {
+pub fn draw_tile(window: &mut RenderWindow, x0: f32, y0: f32, width: f32, height: f32, is_wall: bool) {
     let mut rectangle = RectangleShape::default();
     rectangle.set_size((width, height));
     rectangle.set_outline_color(Color::BLUE);
+    if is_wall {
+        rectangle.set_fill_color(Color::BLACK);
+    }
     rectangle.set_outline_thickness(2.0);
     rectangle.set_position((x0, y0));
     window.draw(&rectangle);

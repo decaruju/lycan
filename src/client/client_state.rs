@@ -31,7 +31,7 @@ impl ClientGamestate {
     }
 
     pub fn set_player(&mut self, player_id: String) {
-        self.gamestate.players.insert(player_id.clone(), Player{name: String::from("foo"), position: (0.0, 0.0)});
+        self.gamestate.players.insert(player_id.clone(), Player{name: String::from("foo"), position: (100.0, 100.0)});
         self.player_id = Some(player_id);
     }
 
@@ -41,6 +41,15 @@ impl ClientGamestate {
 
     pub fn set_game(&mut self, game_id: String) {
         self.game_id = Some(game_id);
+    }
+
+    pub fn player_in_wall(&self) -> bool {
+        let position = self.get_player().unwrap().position;
+        let room_x = position.0 as i32/32/16;
+        let room_y = position.1 as i32/32/16;
+        let room = self.gamestate.map.rooms.get(&(room_x, room_y)).unwrap();
+        let tile = (position.0 as i32 % (32 * 16)/32, position.1 as i32 % (32 * 16)/32);
+        room.is_wall(tile)
     }
 
     pub fn get_game_id(&self) -> String {

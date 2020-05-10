@@ -36,6 +36,18 @@ pub struct Room {
     pub position: (i32, i32),
 }
 
+impl Room {
+    pub fn is_wall(&self, tile: (i32, i32)) -> bool {
+        if tile.0 == 0 || tile.1 == 0 {
+            return true;
+        }
+        if tile.0 == 15 || tile.1 == 15 {
+            return true;
+        }
+        return false;
+    }
+}
+
 impl Default for Room {
     fn default() -> Self {
         let mut doors = HashMap::new();
