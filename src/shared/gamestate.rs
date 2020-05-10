@@ -6,6 +6,45 @@ use serde::{Serialize, Deserialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Gamestate {
     pub players: HashMap<String, Player>,
+    pub map: Map,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Map {
+    pub rooms: HashMap<(i32, i32), Room>,
+}
+
+impl Default for Map {
+    fn default() -> Self {
+        let mut rooms = HashMap::new();
+        rooms.insert((0, 0), Room::default());
+        Map{rooms}
+    }
+}
+
+#[derive(std::hash::Hash, std::cmp::PartialEq, std::cmp::Eq, Debug, Serialize, Deserialize)]
+pub enum Direction {
+    Down,
+    Up,
+    Left,
+    Right,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Room {
+    pub doors: HashMap<Direction, bool>,
+    pub position: (i32, i32),
+}
+
+impl Default for Room {
+    fn default() -> Self {
+        let mut doors = HashMap::new();
+        doors.insert(Direction::Right, true);
+        doors.insert(Direction::Up, true);
+        doors.insert(Direction::Down, true);
+        doors.insert(Direction::Left, true);
+        Room{doors, position: (0, 0)}
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -29,7 +68,7 @@ pub struct Position {
 
 impl Default for Gamestate {
     fn default() -> Self {
-        Gamestate{players: HashMap::new()}
+        Gamestate{players: HashMap::new(), map: Map::default()}
     }
 }
 

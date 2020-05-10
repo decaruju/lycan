@@ -1,5 +1,5 @@
 use sfml::{
-    graphics::{CircleShape, Color, RenderTarget, RenderWindow, Shape, Transformable},
+    graphics::{CircleShape, Color, RenderTarget, RenderWindow, Shape, Transformable, RectangleShape},
     window::{Event, Key},
 };
 use std::{
@@ -8,7 +8,7 @@ use std::{
     time::Duration,
 };
 use crate::client_state::{ClientGamestate};
-use lycan::shared::gamestate::{UpdateResponse};
+use lycan::shared::gamestate::{UpdateResponse, Room};
 use crate::http;
 
 pub enum GameResult {
@@ -75,13 +75,39 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
             gamestate.get_mut_player().unwrap().move_player(movement);
         }
 
-        window.clear(Color::RED);
-        for (id, player) in Arc::clone(&gamestate).read().unwrap().get_players() {
-            window.draw(&ball(player.position));
-        }
-        window.display();
+        draw(window, Arc::clone(&gamestate));
         thread::sleep(Duration::from_millis(1));
     }
+}
+
+pub fn draw(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamestate>>) {
+    window.clear(Color::RED);
+    for (position, room) in gamestate.read().unwrap().get_rooms() {
+        draw_room(window, room);
+    }
+    for (id, player) in gamestate.read().unwrap().get_players() {
+        window.draw(&ball(player.position));
+    }
+    window.display();
+}
+
+pub fn draw_room(window: &mut RenderWindow, room: &Room) {
+    for i in 0..32 {
+        for j in 0..32 {
+            let x0 = (i * 32 + room.position.0*32*32) as f32;
+            let y0 = (j * 32 + room.position.1*32*32) as f32;
+            draw_rect(window, x0, y0, 32.0, 32.0);
+        }
+    }
+}
+
+pub fn draw_rect(window: &mut RenderWindow, x0: f32, y0: f32, width: f32, height: f32) {
+    let mut rectangle = RectangleShape::default();
+    rectangle.set_size((width, height));
+    rectangle.set_outline_color(Color::BLUE);
+    rectangle.set_outline_thickness(2.0);
+    rectangle.set_position((x0, y0));
+    window.draw(&rectangle);
 }
 
 pub fn ball<'a>(position: (f32, f32)) -> CircleShape<'a> {

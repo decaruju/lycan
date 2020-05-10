@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use lycan::shared::gamestate::{Gamestate, Player, UpdateResponse};
+use lycan::shared::gamestate::{Gamestate, Player, UpdateResponse, Room};
 
 pub struct ClientGamestate {
     pub gamestate: Gamestate,
@@ -48,6 +48,10 @@ impl ClientGamestate {
             Some(game_id) => game_id.clone(),
             None => String::from(""),
         }
+    }
+
+    pub fn get_rooms(&self) -> &HashMap<(i32, i32), Room> {
+        &self.gamestate.map.rooms
     }
 
     pub fn get_player_id(&self) -> String {
