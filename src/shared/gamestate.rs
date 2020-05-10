@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::fmt::Debug;
+use std::fmt::{ Debug, Display };
 
 use serde::{Serialize, Deserialize};
 
@@ -11,13 +11,38 @@ pub struct Gamestate {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Map {
-    pub rooms: HashMap<(i32, i32), Room>,
+    pub rooms: HashMap<i32, HashMap<i32, Room>>,
+}
+
+impl Map {
+    pub fn room(&self, x: i32, y: i32) -> Option<&Room> {
+        self.rooms.get(&x)?.get(&y)
+    }
+
+    pub fn room_mut(&mut self, x: i32, y: i32) -> Option<&mut Room> {
+        self.rooms.get_mut(&x)?.get_mut(&y)
+    }
+
+    pub fn add_room(&mut self, position: (i32, i32), room: Room) {
+        match self.rooms.get_mut(&position.0) {
+            Some(row) => {
+                row.insert(position.1, room);
+            },
+            None => {
+                let mut row = HashMap::new();
+                row.insert(position.1, room);
+                self.rooms.insert(position.0, row);
+            }
+        }
+    }
 }
 
 impl Default for Map {
     fn default() -> Self {
         let mut rooms = HashMap::new();
-        rooms.insert((0, 0), Room::default());
+        let mut row = HashMap::new();
+        row.insert(0, Room::default());
+        rooms.insert(0, row);
         Map{rooms}
     }
 }
@@ -30,19 +55,30 @@ pub enum Direction {
     Right,
 }
 
+impl Direction {
+    pub fn to_string(&self) -> String {
+        match self {
+            Direction::Down => String::from("Down"),
+            Direction::Up => String::from("Up"),
+            Direction::Left => String::from("Left"),
+            Direction::Right => String::from("Right"),
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Room {
-    pub doors: HashMap<Direction, bool>,
+    pub doors: HashMap<String, bool>,
     pub position: (i32, i32),
 }
 
 impl Room {
     pub fn new(position: (i32, i32)) -> Self {
         let mut doors = HashMap::new();
-        doors.insert(Direction::Right, true);
-        doors.insert(Direction::Up, true);
-        doors.insert(Direction::Down, true);
-        doors.insert(Direction::Left, true);
+        doors.insert(Direction::Right.to_string(), true);
+        doors.insert(Direction::Up.to_string(), true);
+        doors.insert(Direction::Down.to_string(), true);
+        doors.insert(Direction::Left.to_string(), true);
         Room{doors, position}
     }
     pub fn is_wall(&self, tile: (i32, i32)) -> bool {
@@ -56,16 +92,16 @@ impl Room {
     }
 
     pub fn is_door(&self, tile: (i32, i32)) -> bool {
-        if tile.0 == 0 && self.doors[&Direction::Left] && tile.1 > 6 && tile.1 < 10 {
+        if tile.0 == 0 && self.doors[&Direction::Left.to_string()] && tile.1 > 6 && tile.1 < 10 {
             return true;
         }
-        if tile.0 == 15 && self.doors[&Direction::Right] && tile.1 > 6 && tile.1 < 10 {
+        if tile.0 == 15 && self.doors[&Direction::Right.to_string()] && tile.1 > 6 && tile.1 < 10 {
             return true;
         }
-        if tile.1 == 0 && self.doors[&Direction::Down] && tile.0 > 6 && tile.0 < 10 {
+        if tile.1 == 0 && self.doors[&Direction::Down.to_string()] && tile.0 > 6 && tile.0 < 10 {
             return true;
         }
-        if tile.1 == 15 && self.doors[&Direction::Up] && tile.0 > 6 && tile.0 < 10 {
+        if tile.1 == 15 && self.doors[&Direction::Up.to_string()] && tile.0 > 6 && tile.0 < 10 {
             return true;
         }
         return false;

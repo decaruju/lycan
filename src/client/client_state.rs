@@ -63,7 +63,8 @@ impl ClientGamestate {
     }
 
     pub fn player_room(&self) -> &Room {
-        self.gamestate.map.rooms.get(&self.player_room_coord()).unwrap()
+        let player_room_coord = self.player_room_coord();
+        self.gamestate.map.room(player_room_coord.0, player_room_coord.1).unwrap()
     }
 
     pub fn player_in_wall(&self) -> bool {
@@ -86,7 +87,7 @@ impl ClientGamestate {
             (position.0 - 1, position.1),
             (position.0 + 1, position.1),
         ].iter() {
-            if !self.gamestate.map.rooms.get(&room_pos).is_none() {
+            if !self.gamestate.map.room(position.0, position.1).is_none() {
                 degree += 1;
             }
         }
@@ -94,10 +95,10 @@ impl ClientGamestate {
     }
 
     pub fn add_room(&mut self, position: (i32, i32)) {
-        if !self.gamestate.map.rooms.get(&position).is_none() {
+        if !self.gamestate.map.room(position.0, position.1).is_none() {
             return
         }
-        self.gamestate.map.rooms.insert(position, Room::new(position));
+        self.gamestate.map.add_room(position, Room::new(position));
         self.remove_doors(position);
     }
 
@@ -108,16 +109,16 @@ impl ClientGamestate {
             (position.0 - 1, position.1),
             (position.0 + 1, position.1),
         ].iter() {
-            if self.gamestate.map.rooms.get(room_pos).is_none() && self.room_degree(*room_pos) > 1 {
+            if self.gamestate.map.room(room_pos.0, room_pos.1).is_none() && self.room_degree(*room_pos) > 1 {
                 for (room_pos, direction) in [
                     ((room_pos.0, room_pos.1 + 1), Direction::Down),
                     ((room_pos.0, room_pos.1 - 1), Direction::Up),
                     ((room_pos.0 - 1, room_pos.1), Direction::Right),
                     ((room_pos.0 + 1, room_pos.1), Direction::Left),
                 ].iter() {
-                    match self.gamestate.map.rooms.get_mut(room_pos) {
+                    match self.gamestate.map.room_mut(room_pos.0, room_pos.1) {
                         Some(room) => {
-                            *room.doors.get_mut(direction).unwrap() = false;
+                            *room.doors.get_mut(&direction.to_string()).unwrap() = false;
                         }
                         _ => (),
                     }
@@ -133,8 +134,14 @@ impl ClientGamestate {
         }
     }
 
-    pub fn get_rooms(&self) -> &HashMap<(i32, i32), Room> {
-        &self.gamestate.map.rooms
+    pub fn get_rooms(&self) -> Vec<&Room> {
+        let mut rtn = Vec::new();
+        for (x, row) in &self.gamestate.map.rooms {
+            for (y, room) in row {
+                rtn.push(room);
+            }
+        }
+        rtn
     }
 
     pub fn get_player_id(&self) -> String {

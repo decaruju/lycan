@@ -153,8 +153,8 @@ fn move_center(window: &mut RenderWindow, direction: (f32, f32)) {
 
 pub fn draw(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamestate>>) {
     window.clear(Color::RED);
-    for (position, room) in gamestate.read().unwrap().get_rooms() {
-        draw_room(window, room);
+    for room in gamestate.read().unwrap().get_rooms() {
+        draw_room(window, &room);
     }
     for (id, player) in gamestate.read().unwrap().get_players() {
         window.draw(&ball(player.position));
