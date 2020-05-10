@@ -21,7 +21,10 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
     thread::spawn(move || {
         loop {
             {
-                match http::update(&gamestate.get_game_id(), &gamestate.get_player_id(), gamestate.get_player().unwrap().position) {
+                let game_id = thread_gamestate.read().unwrap().get_game_id().clone();
+                let player_id = thread_gamestate.read().unwrap().get_player_id().clone();
+                let position = thread_gamestate.read().unwrap().get_player().unwrap().position;
+                match http::update(&game_id, &player_id, position) {
                     Ok(data) => {
                         let new_state: UpdateResponse = serde_json::from_str(&data).unwrap();
                         thread_gamestate.write().unwrap().update(new_state);
