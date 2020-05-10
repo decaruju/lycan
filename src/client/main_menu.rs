@@ -21,7 +21,7 @@ struct MenuButton<'a> {
 
 impl<'a> MenuButton<'a> {
     fn new(title: String) -> Self {
-        let size = Vector2f::from((30., 10.));
+        let size = Vector2f::from((300., 100.));
         Self {
             title: title,
             texture: RectangleShape::with_size(size),
@@ -64,8 +64,9 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
         if Key::Space.is_pressed() {
         }
         let size = window.size();
-        println!("{:?}", startgame_button.texture.origin());
-        startgame_button.texture.set_position(((size.x as f32)/2.0, (size.y as f32)/2.0));
+        startgame_button
+            .texture
+            .set_position(((size.x as f32) / 2.0, (size.y as f32) / 2.0));
         window.clear(Color::BLUE);
         window.draw(&startgame_button);
         window.draw(&theball);
