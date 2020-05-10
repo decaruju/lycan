@@ -44,10 +44,22 @@ impl ClientGamestate {
     }
 
     pub fn player_room_coord(&self) -> (i32, i32) {
+        let position = self.player_position();
+        let room_x = position.0/32./16.;
+        let room_y = position.1/32./16.;
+        (room_x.floor() as i32, room_y.floor() as i32)
+    }
+
+    pub fn player_position(&self) -> (f32, f32) {
+        self.get_player().unwrap().position
+    }
+
+    pub fn player_tile(&self) -> (i32, i32) {
         let position = self.get_player().unwrap().position;
-        let room_x = position.0 as i32/32/16;
-        let room_y = position.1 as i32/32/16;
-        (room_x, room_y)
+        (
+            (((position.0 as i32).rem_euclid(32*16)) as f32/32.0).floor() as i32,
+            (((position.1 as i32).rem_euclid(32*16)) as f32/32.0).floor() as i32,
+        )
     }
 
     pub fn player_room(&self) -> &Room {
@@ -55,21 +67,63 @@ impl ClientGamestate {
     }
 
     pub fn player_in_wall(&self) -> bool {
-        let position = self.get_player().unwrap().position;
+        let tile = self.player_tile();
         let room = self.player_room();
-        let tile = (position.0 as i32 % (32 * 16)/32, position.1 as i32 % (32 * 16)/32);
         room.is_wall(tile)
     }
 
     pub fn player_in_door(&self) -> bool {
-        let position = self.get_player().unwrap().position;
         let room = self.player_room();
-        let tile = (position.0 as i32 % (32 * 16)/32, position.1 as i32 % (32 * 16)/32);
+        let tile = self.player_tile();
         room.is_door(tile)
     }
 
+    pub fn room_degree(&self, position: (i32, i32)) -> i32 {
+        let mut degree = 0;
+        for room_pos in [
+            (position.0, position.1 + 1),
+            (position.0, position.1 - 1),
+            (position.0 - 1, position.1),
+            (position.0 + 1, position.1),
+        ].iter() {
+            if !self.gamestate.map.rooms.get(&room_pos).is_none() {
+                degree += 1;
+            }
+        }
+        degree
+    }
+
     pub fn add_room(&mut self, position: (i32, i32)) {
+        if !self.gamestate.map.rooms.get(&position).is_none() {
+            return
+        }
         self.gamestate.map.rooms.insert(position, Room::new(position));
+        self.remove_doors(position);
+    }
+
+    pub fn remove_doors(&mut self, position: (i32, i32)) {
+        for room_pos in [
+            (position.0, position.1 + 1),
+            (position.0, position.1 - 1),
+            (position.0 - 1, position.1),
+            (position.0 + 1, position.1),
+        ].iter() {
+            if self.gamestate.map.rooms.get(room_pos).is_none() && self.room_degree(*room_pos) > 1 {
+                for (room_pos, direction) in [
+                    ((room_pos.0, room_pos.1 + 1), Direction::Down),
+                    ((room_pos.0, room_pos.1 - 1), Direction::Up),
+                    ((room_pos.0 - 1, room_pos.1), Direction::Right),
+                    ((room_pos.0 + 1, room_pos.1), Direction::Left),
+                ].iter() {
+                    match self.gamestate.map.rooms.get_mut(room_pos) {
+                        Some(room) => {
+                            *room.doors.get_mut(direction).unwrap() = false;
+                        }
+                        _ => (),
+                    }
+                }
+            }
+        }
     }
 
     pub fn get_game_id(&self) -> String {

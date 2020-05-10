@@ -68,6 +68,12 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
         if Key::S.is_pressed() {
             movement.1 += 10.0;
         }
+        if Key::Z.is_pressed() {
+            zoom_in(window);
+        }
+        if Key::X.is_pressed() {
+            zoom_out(window);
+        }
 
         {
             let mut gamestate = gamestate.write().unwrap();
@@ -78,19 +84,47 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
             }
             if gamestate.player_in_door() {
                 let player_room = gamestate.player_room().position;
-                gamestate.add_room((player_room.0 - 1, player_room.1))
+                let player_position = gamestate.player_tile();
+
+                let new_room = if player_position.0 == 0 {
+                    (player_room.0 - 1, player_room.1)
+                } else if player_position.0 == 15 {
+                    (player_room.0 + 1, player_room.1)
+                } else if player_position.1 == 0 {
+                    (player_room.0, player_room.1 - 1)
+                } else if player_position.1 == 15 {
+                    (player_room.0, player_room.1 + 1)
+                } else {
+                    (player_room.0, player_room.1)
+                };
+                gamestate.add_room(new_room);
             } else if gamestate.player_in_wall() {
                 let mut player = gamestate.get_mut_player().unwrap();
                 player.move_player((-movement.0, -movement.1))
             }
             let player = gamestate.get_player().unwrap();
             center_view(window, player);
+            println!("player{:?}, in_wall{:?}, in_door{:?}, room{:?}, tile{:?}", gamestate.player_position(), gamestate.player_in_wall(), gamestate.player_in_wall(), gamestate.player_room_coord(), gamestate.player_tile());
         }
 
 
         draw(window, Arc::clone(&gamestate));
         thread::sleep(Duration::from_millis(1));
     }
+}
+
+pub fn zoom_out(window: &mut RenderWindow) {
+    let view = window.view();
+    let mut new_view = View::new(view.center(), view.size());
+    new_view.set_size(view.size()*0.99);
+    window.set_view(&new_view);
+}
+
+pub fn zoom_in(window: &mut RenderWindow) {
+    let view = window.view();
+    let mut new_view = View::new(view.center(), view.size());
+    new_view.set_size(view.size()/0.99);
+    window.set_view(&new_view);
 }
 
 pub fn center_view(window: &mut RenderWindow, player: &Player) {

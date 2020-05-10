@@ -59,6 +59,15 @@ impl Room {
         if tile.0 == 0 && self.doors[&Direction::Left] && tile.1 > 6 && tile.1 < 10 {
             return true;
         }
+        if tile.0 == 15 && self.doors[&Direction::Right] && tile.1 > 6 && tile.1 < 10 {
+            return true;
+        }
+        if tile.1 == 0 && self.doors[&Direction::Down] && tile.0 > 6 && tile.0 < 10 {
+            return true;
+        }
+        if tile.1 == 15 && self.doors[&Direction::Up] && tile.0 > 6 && tile.0 < 10 {
+            return true;
+        }
         return false;
     }
 }
