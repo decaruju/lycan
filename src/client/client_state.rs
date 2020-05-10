@@ -153,6 +153,9 @@ impl ClientGamestate {
 
     pub fn update(&mut self, data: UpdateResponse) {
         for (player_id, player_state) in data.players {
+            if player_id == self.player_id {
+                continue
+            }
             match self.gamestate.players.get_mut(&player_id) {
                 Some(player) => {
                     player.position = player_state.position;
