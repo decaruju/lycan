@@ -85,10 +85,14 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
 
 pub fn center_view(window: &mut RenderWindow, player: &Player) {
     let player_position = window.map_coords_to_pixel_current_view(sfml::system::Vector2{x: player.position.0, y: player.position.1});
-    let direction = if player_position.x - (window.size().x/2) as i32 > 10 {
+    let direction = if player_position.x - (window.size().x/2) as i32 > 100 {
         (10.0, 0.0)
-    } else if (window.size().x/2) as i32 - player_position.x > 10 {
+    } else if (window.size().x/2) as i32 - player_position.x > 100 {
         (-10.0, 0.0)
+    } else if (window.size().y/2) as i32 - player_position.y > 100 {
+        (0.0, -10.0)
+    } else if player_position.y - (window.size().y/2) as i32 > 100 {
+        (0.0, 10.0)
     } else {
         (0.0, 0.0)
     };
@@ -137,7 +141,6 @@ pub fn ball<'a>(position: (f32, f32)) -> CircleShape<'a> {
     let mut ball = CircleShape::default();
     ball.set_radius(20.);
     ball.set_fill_color(Color::YELLOW);
-    ball.set_origin((20. / 2., 20. / 2.));
     ball.set_position(position);
     ball
 }
