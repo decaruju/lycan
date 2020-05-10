@@ -1,5 +1,5 @@
 use sfml::{
-    graphics::{CircleShape, Color, RenderTarget, RenderWindow, Shape, Transformable, RectangleShape},
+    graphics::{CircleShape, Color, RenderTarget, RenderWindow, Shape, Transformable, RectangleShape, View},
     window::{Event, Key},
 };
 use std::{
@@ -70,10 +70,21 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
         }
 
         {
-            let gamestate = Arc::clone(&gamestate);
             let mut gamestate = gamestate.write().unwrap();
-            gamestate.get_mut_player().unwrap().move_player(movement);
+
+            let mut player = gamestate.get_mut_player().unwrap();
+            player.move_player(movement);
+            let player_position = window.map_coords_to_pixel_current_view(sfml::system::Vector2{x: player.position.0, y: player.position.1});
+            if player_position.x - window.size().x as i32 > 10 {
+                let view = window.view();
+                let mut new_view = View::new(view.center(), view.size());
+                let old_center = view.center();
+                new_view.set_center((view.center().x + 10.0, view.center().y));
+                window.set_view(&new_view);
+                println!("should move");
+            }
         }
+
 
         draw(window, Arc::clone(&gamestate));
         thread::sleep(Duration::from_millis(1));
