@@ -8,7 +8,7 @@ use std::{
     time::Duration,
 };
 use crate::client_state::{ClientGamestate};
-use lycan::shared::gamestate::{UpdateResponse, Room};
+use lycan::shared::gamestate::{UpdateResponse, Room, Player};
 use crate::http;
 
 pub enum GameResult {
@@ -74,21 +74,33 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
 
             let mut player = gamestate.get_mut_player().unwrap();
             player.move_player(movement);
-            let player_position = window.map_coords_to_pixel_current_view(sfml::system::Vector2{x: player.position.0, y: player.position.1});
-            if player_position.x - window.size().x as i32 > 10 {
-                let view = window.view();
-                let mut new_view = View::new(view.center(), view.size());
-                let old_center = view.center();
-                new_view.set_center((view.center().x + 10.0, view.center().y));
-                window.set_view(&new_view);
-                println!("should move");
-            }
+            center_view(window, player);
         }
 
 
         draw(window, Arc::clone(&gamestate));
         thread::sleep(Duration::from_millis(1));
     }
+}
+
+pub fn center_view(window: &mut RenderWindow, player: &Player) {
+    let player_position = window.map_coords_to_pixel_current_view(sfml::system::Vector2{x: player.position.0, y: player.position.1});
+    let direction = if player_position.x - (window.size().x/2) as i32 > 10 {
+        (10.0, 0.0)
+    } else if (window.size().x/2) as i32 - player_position.x > 10 {
+        (-10.0, 0.0)
+    } else {
+        (0.0, 0.0)
+    };
+    move_center(window, direction)
+}
+
+fn move_center(window: &mut RenderWindow, direction: (f32, f32)) {
+    let view = window.view();
+    let mut new_view = View::new(view.center(), view.size());
+    let old_center = view.center();
+    new_view.set_center((view.center().x + direction.0, view.center().y + direction.1));
+    window.set_view(&new_view);
 }
 
 pub fn draw(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamestate>>) {
