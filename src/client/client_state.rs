@@ -153,7 +153,7 @@ impl ClientGamestate {
 
     pub fn update(&mut self, data: UpdateResponse) {
         for (player_id, player_state) in data.players {
-            if player_id == self.player_id {
+            if player_id == self.player_id.unwrap() {
                 continue
             }
             match self.gamestate.players.get_mut(&player_id) {
