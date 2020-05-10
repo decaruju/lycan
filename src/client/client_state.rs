@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use lycan::shared::gamestate::{Gamestate, Player, UpdateResponse, Room};
+use lycan::shared::gamestate::{Gamestate, Player, UpdateResponse, Room, Direction};
 
 pub struct ClientGamestate {
     pub gamestate: Gamestate,
@@ -43,13 +43,33 @@ impl ClientGamestate {
         self.game_id = Some(game_id);
     }
 
-    pub fn player_in_wall(&self) -> bool {
+    pub fn player_room_coord(&self) -> (i32, i32) {
         let position = self.get_player().unwrap().position;
         let room_x = position.0 as i32/32/16;
         let room_y = position.1 as i32/32/16;
-        let room = self.gamestate.map.rooms.get(&(room_x, room_y)).unwrap();
+        (room_x, room_y)
+    }
+
+    pub fn player_room(&self) -> &Room {
+        self.gamestate.map.rooms.get(&self.player_room_coord()).unwrap()
+    }
+
+    pub fn player_in_wall(&self) -> bool {
+        let position = self.get_player().unwrap().position;
+        let room = self.player_room();
         let tile = (position.0 as i32 % (32 * 16)/32, position.1 as i32 % (32 * 16)/32);
         room.is_wall(tile)
+    }
+
+    pub fn player_in_door(&self) -> bool {
+        let position = self.get_player().unwrap().position;
+        let room = self.player_room();
+        let tile = (position.0 as i32 % (32 * 16)/32, position.1 as i32 % (32 * 16)/32);
+        room.is_door(tile)
+    }
+
+    pub fn add_room(&mut self, position: (i32, i32)) {
+        self.gamestate.map.rooms.insert(position, Room::new(position));
     }
 
     pub fn get_game_id(&self) -> String {

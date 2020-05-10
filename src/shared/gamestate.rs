@@ -37,6 +37,14 @@ pub struct Room {
 }
 
 impl Room {
+    pub fn new(position: (i32, i32)) -> Self {
+        let mut doors = HashMap::new();
+        doors.insert(Direction::Right, true);
+        doors.insert(Direction::Up, true);
+        doors.insert(Direction::Down, true);
+        doors.insert(Direction::Left, true);
+        Room{doors, position}
+    }
     pub fn is_wall(&self, tile: (i32, i32)) -> bool {
         if tile.0 == 0 || tile.1 == 0 {
             return true;
@@ -46,16 +54,18 @@ impl Room {
         }
         return false;
     }
+
+    pub fn is_door(&self, tile: (i32, i32)) -> bool {
+        if tile.0 == 0 && self.doors[&Direction::Left] && tile.1 > 6 && tile.1 < 10 {
+            return true;
+        }
+        return false;
+    }
 }
 
 impl Default for Room {
     fn default() -> Self {
-        let mut doors = HashMap::new();
-        doors.insert(Direction::Right, true);
-        doors.insert(Direction::Up, true);
-        doors.insert(Direction::Down, true);
-        doors.insert(Direction::Left, true);
-        Room{doors, position: (0, 0)}
+        Room::new((0, 0))
     }
 }
 
