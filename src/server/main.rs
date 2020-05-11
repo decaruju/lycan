@@ -102,7 +102,7 @@ async fn router(
 async fn main() -> Result<()> {
     pretty_env_logger::init();
 
-    let addr = "127.0.0.1:1337".parse().unwrap();
+    let addr = "0.0.0.0:1337".parse().unwrap();
 
     let state: State = Arc::new(RwLock::new(ServerState::new()));
 

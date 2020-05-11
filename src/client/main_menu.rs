@@ -69,11 +69,9 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
         }
 
         if mouse::Button::Left.is_pressed() {
-            println!("{:?}", window.mouse_position());
         }
 
         if Key::Space.is_pressed() {
-            println!("{:?}", window.default_view());
         }
         window.clear(Color::BLUE);
         window.set_view(&menu_view);

@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use lycan::shared::gamestate::{Gamestate, Player, UpdateResponse, Room};
+use lycan::shared::gamestate::{Gamestate, Player, UpdateResponse, Room, Direction};
 
 pub struct ClientGamestate {
     pub gamestate: Gamestate,
@@ -31,7 +31,7 @@ impl ClientGamestate {
     }
 
     pub fn set_player(&mut self, player_id: String) {
-        self.gamestate.players.insert(player_id.clone(), Player{name: String::from("foo"), position: (0.0, 0.0)});
+        self.gamestate.players.insert(player_id.clone(), Player{name: String::from("foo"), position: (100.0, 100.0)});
         self.player_id = Some(player_id);
     }
 
@@ -43,6 +43,90 @@ impl ClientGamestate {
         self.game_id = Some(game_id);
     }
 
+    pub fn player_room_coord(&self) -> (i32, i32) {
+        let position = self.player_position();
+        let room_x = position.0/32./16.;
+        let room_y = position.1/32./16.;
+        (room_x.floor() as i32, room_y.floor() as i32)
+    }
+
+    pub fn player_position(&self) -> (f32, f32) {
+        self.get_player().unwrap().position
+    }
+
+    pub fn player_tile(&self) -> (i32, i32) {
+        let position = self.get_player().unwrap().position;
+        (
+            (((position.0 as i32).rem_euclid(32*16)) as f32/32.0).floor() as i32,
+            (((position.1 as i32).rem_euclid(32*16)) as f32/32.0).floor() as i32,
+        )
+    }
+
+    pub fn player_room(&self) -> &Room {
+        let player_room_coord = self.player_room_coord();
+        self.gamestate.map.room(player_room_coord.0, player_room_coord.1).unwrap()
+    }
+
+    pub fn player_in_wall(&self) -> bool {
+        let tile = self.player_tile();
+        let room = self.player_room();
+        room.is_wall(tile)
+    }
+
+    pub fn player_in_door(&self) -> bool {
+        let room = self.player_room();
+        let tile = self.player_tile();
+        room.is_door(tile)
+    }
+
+    pub fn room_degree(&self, position: (i32, i32)) -> i32 {
+        let mut degree = 0;
+        for room_pos in [
+            (position.0, position.1 + 1),
+            (position.0, position.1 - 1),
+            (position.0 - 1, position.1),
+            (position.0 + 1, position.1),
+        ].iter() {
+            if !self.gamestate.map.room(room_pos.0, room_pos.1).is_none() {
+                degree += 1;
+            }
+        }
+        degree
+    }
+
+    pub fn add_room(&mut self, position: (i32, i32)) {
+        if !self.gamestate.map.room(position.0, position.1).is_none() {
+            return
+        }
+        self.gamestate.map.add_room(position, Room::new(position));
+        self.remove_doors(position);
+    }
+
+    pub fn remove_doors(&mut self, position: (i32, i32)) {
+        for room_pos in [
+            (position.0, position.1 + 1),
+            (position.0, position.1 - 1),
+            (position.0 - 1, position.1),
+            (position.0 + 1, position.1),
+        ].iter() {
+            if self.gamestate.map.room(room_pos.0, room_pos.1).is_none() && self.room_degree(*room_pos) > 1 {
+                for (room_pos, direction) in [
+                    ((room_pos.0, room_pos.1 + 1), Direction::Down),
+                    ((room_pos.0, room_pos.1 - 1), Direction::Up),
+                    ((room_pos.0 - 1, room_pos.1), Direction::Right),
+                    ((room_pos.0 + 1, room_pos.1), Direction::Left),
+                ].iter() {
+                    match self.gamestate.map.room_mut(room_pos.0, room_pos.1) {
+                        Some(room) => {
+                            *room.doors.get_mut(&direction.to_string()).unwrap() = false;
+                        }
+                        _ => (),
+                    }
+                }
+            }
+        }
+    }
+
     pub fn get_game_id(&self) -> String {
         match &self.game_id {
             Some(game_id) => game_id.clone(),
@@ -50,8 +134,14 @@ impl ClientGamestate {
         }
     }
 
-    pub fn get_rooms(&self) -> &HashMap<(i32, i32), Room> {
-        &self.gamestate.map.rooms
+    pub fn get_rooms(&self) -> Vec<&Room> {
+        let mut rtn = Vec::new();
+        for (x, row) in &self.gamestate.map.rooms {
+            for (y, room) in row {
+                rtn.push(room);
+            }
+        }
+        rtn
     }
 
     pub fn get_player_id(&self) -> String {
@@ -63,6 +153,9 @@ impl ClientGamestate {
 
     pub fn update(&mut self, data: UpdateResponse) {
         for (player_id, player_state) in data.players {
+            if player_id == self.player_id.as_ref().unwrap().clone() {
+                continue
+            }
             match self.gamestate.players.get_mut(&player_id) {
                 Some(player) => {
                     player.position = player_state.position;

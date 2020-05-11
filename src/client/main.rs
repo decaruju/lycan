@@ -25,6 +25,7 @@ fn main() {
     match http::new_game() {
         Ok(game_id) => {
             println!("{}", game_id);
+            // let game_id = String::from("c601ae24-5f37-4e71-ae71-99b3211d552d");
             match http::join_game(&game_id) {
                 Ok(player_id) => {
                     println!("{}", player_id);
