@@ -87,7 +87,7 @@ impl ClientGamestate {
             (position.0 - 1, position.1),
             (position.0 + 1, position.1),
         ].iter() {
-            if !self.gamestate.map.room(position.0, position.1).is_none() {
+            if !self.gamestate.map.room(room_pos.0, room_pos.1).is_none() {
                 degree += 1;
             }
         }
