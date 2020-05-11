@@ -8,7 +8,7 @@ use std::{
     time::Duration,
 };
 use crate::client_state::{ClientGamestate};
-use lycan::shared::gamestate::{UpdateResponse, Room, Player};
+use lycan::shared::gamestate::{Room, Player, Gamestate};
 use crate::http;
 
 pub enum GameResult {
@@ -24,9 +24,10 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
                 let game_id = thread_gamestate.read().unwrap().get_game_id().clone();
                 let player_id = thread_gamestate.read().unwrap().get_player_id().clone();
                 let position = thread_gamestate.read().unwrap().get_player().unwrap().position;
-                match http::update(&game_id, &player_id, position) {
+                let new_rooms = thread_gamestate.write().unwrap().get_new_rooms();
+                match http::update(&game_id, &player_id, position, new_rooms) {
                     Ok(data) => {
-                        let new_state: UpdateResponse = serde_json::from_str(&data).unwrap();
+                        let new_state: Gamestate = serde_json::from_str(&data).unwrap();
                         thread_gamestate.write().unwrap().update(new_state);
                     },
                     Err(err) => println!("{}", err),

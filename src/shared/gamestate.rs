@@ -9,6 +9,41 @@ pub struct Gamestate {
     pub map: Map,
 }
 
+impl Gamestate {
+    pub fn add_room(&mut self, position: (i32, i32)) {
+        if !self.map.room(position.0, position.1).is_none() {
+            return
+        }
+        self.map.add_room(position, Room::new(position));
+        self.remove_doors(position);
+    }
+
+    pub fn remove_doors(&mut self, position: (i32, i32)) {
+        for room_pos in [
+            (position.0, position.1 + 1),
+            (position.0, position.1 - 1),
+            (position.0 - 1, position.1),
+            (position.0 + 1, position.1),
+        ].iter() {
+            if self.map.room(room_pos.0, room_pos.1).is_none() && self.map.room_degree(*room_pos) > 1 {
+                for (room_pos, direction) in [
+                    ((room_pos.0, room_pos.1 + 1), Direction::Down),
+                    ((room_pos.0, room_pos.1 - 1), Direction::Up),
+                    ((room_pos.0 - 1, room_pos.1), Direction::Right),
+                    ((room_pos.0 + 1, room_pos.1), Direction::Left),
+                ].iter() {
+                    match self.map.room_mut(room_pos.0, room_pos.1) {
+                        Some(room) => {
+                            *room.doors.get_mut(&direction.to_string()).unwrap() = false;
+                        }
+                        _ => (),
+                    }
+                }
+            }
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Map {
     pub rooms: HashMap<i32, HashMap<i32, Room>>,
@@ -35,6 +70,22 @@ impl Map {
             }
         }
     }
+
+    pub fn room_degree(&self, position: (i32, i32)) -> i32 {
+        let mut degree = 0;
+        for room_pos in [
+            (position.0, position.1 + 1),
+            (position.0, position.1 - 1),
+            (position.0 - 1, position.1),
+            (position.0 + 1, position.1),
+        ].iter() {
+            if !self.room(room_pos.0, room_pos.1).is_none() {
+                degree += 1;
+            }
+        }
+        degree
+    }
+
 }
 
 impl Default for Map {
@@ -141,11 +192,6 @@ impl Default for Gamestate {
 
 struct NewResponse {
     pub game_id: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct UpdateResponse {
-    pub players: HashMap<String, SharedPlayer>
 }
 
 #[derive(Debug, Serialize, Deserialize)]

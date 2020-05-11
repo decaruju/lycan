@@ -1,5 +1,7 @@
 mod server_state;
 
+use serde::Deserialize;
+
 use std::collections::HashMap;
 use std::{
     sync::{Arc, RwLock},
@@ -23,30 +25,32 @@ fn bad_request() -> Result<Response<Body>> {
     return Ok(Response::builder().status(StatusCode::BAD_REQUEST).body(Body::empty())?)
 }
 
+#[derive(Deserialize)]
+struct UpdatePayload {
+    game_id: String,
+    player_id: String,
+    position: (f32, f32),
+    new_rooms: Vec<(i32, i32)>,
+}
+
 async fn update(req: Request<Body>, state: State) -> Result<Response<Body>> {
     let whole_body = hyper::body::aggregate(req).await?;
     let data: serde_json::Value = serde_json::from_reader(whole_body.reader())?;
 
-    if let serde_json::Value::Object(map) = data {
-        if let (Some(serde_json::Value::String(game_id)), Some(serde_json::Value::String(player_id)), Some(serde_json::Value::Array(position))) = (map.get("game_id"), map.get("player_id"), map.get("position")) {
-            let pos_x = position.get(0);
-            let pos_y = position.get(1);
-            if let (Some(serde_json::Value::Number(pos_x)), Some(serde_json::Value::Number(pos_y))) = (pos_x, pos_y) {
-                let mut state = state.write().unwrap();
-                match state.update(game_id.clone(), player_id.clone(), (pos_x.as_f64().unwrap() as f32, pos_y.as_f64().unwrap() as f32)) {
-                    Some(game_state) => {
-                        let response = Response::builder()
-                            .status(StatusCode::OK)
-                            .header(header::CONTENT_TYPE, "application/json")
-                            .body(Body::from(serde_json::to_string(&game_state).unwrap()))?;
-                        return Ok(response)
-                    },
-                    None => {
-                        return not_found();
-                    },
-                };
-            }
-        }
+    let payload: UpdatePayload = serde_json::from_value(data).unwrap();
+    let mut state = state.write().unwrap();
+    println!("{:?}", payload.new_rooms);
+    match state.update(payload.game_id.clone(), payload.player_id.clone(), payload.position, payload.new_rooms) {
+        Some(game_state) => {
+            let response = Response::builder()
+                .status(StatusCode::OK)
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(serde_json::to_string(&game_state).unwrap()))?;
+            return Ok(response)
+        },
+        None => {
+            return not_found();
+        },
     }
     return bad_request();
 }
