@@ -1,5 +1,8 @@
+use crate::shared::room::{Room};
+use crate::shared::utils::{Direction};
+
 use std::collections::HashMap;
-use std::fmt::{ Debug, Display };
+use std::fmt::{ Debug };
 
 use serde::{Serialize, Deserialize};
 
@@ -98,72 +101,6 @@ impl Default for Map {
     }
 }
 
-#[derive(std::hash::Hash, std::cmp::PartialEq, std::cmp::Eq, Debug, Serialize, Deserialize)]
-pub enum Direction {
-    Down,
-    Up,
-    Left,
-    Right,
-}
-
-impl Direction {
-    pub fn to_string(&self) -> String {
-        match self {
-            Direction::Down => String::from("Down"),
-            Direction::Up => String::from("Up"),
-            Direction::Left => String::from("Left"),
-            Direction::Right => String::from("Right"),
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Room {
-    pub doors: HashMap<String, bool>,
-    pub position: (i32, i32),
-}
-
-impl Room {
-    pub fn new(position: (i32, i32)) -> Self {
-        let mut doors = HashMap::new();
-        doors.insert(Direction::Right.to_string(), true);
-        doors.insert(Direction::Up.to_string(), true);
-        doors.insert(Direction::Down.to_string(), true);
-        doors.insert(Direction::Left.to_string(), true);
-        Room{doors, position}
-    }
-    pub fn is_wall(&self, tile: (i32, i32)) -> bool {
-        if tile.0 == 0 || tile.1 == 0 {
-            return true;
-        }
-        if tile.0 == 15 || tile.1 == 15 {
-            return true;
-        }
-        return false;
-    }
-
-    pub fn is_door(&self, tile: (i32, i32)) -> bool {
-        if tile.0 == 0 && self.doors[&Direction::Left.to_string()] && tile.1 > 6 && tile.1 < 10 {
-            return true;
-        }
-        if tile.0 == 15 && self.doors[&Direction::Right.to_string()] && tile.1 > 6 && tile.1 < 10 {
-            return true;
-        }
-        if tile.1 == 0 && self.doors[&Direction::Down.to_string()] && tile.0 > 6 && tile.0 < 10 {
-            return true;
-        }
-        if tile.1 == 15 && self.doors[&Direction::Up.to_string()] && tile.0 > 6 && tile.0 < 10 {
-            return true;
-        }
-        return false;
-    }
-}
-
-impl Default for Room {
-    fn default() -> Self {
-        Room::new((0, 0))
-    }
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Player {

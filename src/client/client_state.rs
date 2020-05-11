@@ -1,5 +1,7 @@
 use std::collections::HashMap;
-use lycan::shared::gamestate::{Gamestate, Player, Room, Direction};
+use lycan::shared::gamestate::{Gamestate, Player};
+use lycan::shared::room::{Room};
+use lycan::shared::utils::{Direction};
 
 pub struct ClientGamestate {
     pub gamestate: Gamestate,

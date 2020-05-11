@@ -8,7 +8,8 @@ use std::{
     time::Duration,
 };
 use crate::client_state::{ClientGamestate};
-use lycan::shared::gamestate::{Room, Player, Gamestate};
+use lycan::shared::gamestate::{Player, Gamestate};
+use lycan::shared::room::{Room};
 use crate::http;
 
 pub enum GameResult {
