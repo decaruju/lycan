@@ -10,6 +10,7 @@ edition = "2018"
 #client
 sfml = "0.15.1"
 reqwest = { version = "0.10", features = ["json", "blocking"] }
+csv = "1.1"
 #server
 uuid = { version = "0.8.1", features = ["v4"] }
 futures = "0.1"

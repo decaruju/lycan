@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 use std::fmt::{ Debug };
 use std::collections::HashMap;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TileType {
     None,
     Floor,
@@ -33,7 +33,7 @@ impl RoomType {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum WallType {
     North,
     South,
@@ -50,25 +50,9 @@ pub enum WallType {
 }
 
 pub struct Tile {
-    x: i32,
-    y: i32,
-    tile_type: TileType,
-}
-
-impl Tile {
-    pub fn is_wall(&self) -> bool {
-        match self.tile_type {
-            TileType::Wall(_) => true,
-            _ => false
-        }
-    }
-
-    pub fn is_door(&self) -> bool {
-        match self.tile_type {
-            TileType::Door(_) => true,
-            _ => false
-        }
-    }
+    pub x: i32,
+    pub y: i32,
+    pub tile_type: TileType,
 }
 
 impl Room {
@@ -85,30 +69,20 @@ impl Room {
         self.room_type.tile(tile)
     }
 
-    pub fn is_wall(&self, tile: (i32, i32)) -> bool {
-        if tile.0 == 0 || tile.1 == 0 {
-            return true;
+    pub fn is_wall(&self, position: (i32, i32)) -> bool {
+        match self.tile(position).tile_type {
+            TileType::Wall(_) => true,
+            _ => false
         }
-        if tile.0 == 15 || tile.1 == 15 {
-            return true;
-        }
-        return false;
     }
 
-    pub fn is_door(&self, tile: (i32, i32)) -> bool {
-        if tile.0 == 0 && self.doors[&Direction::Left.to_string()] && tile.1 > 6 && tile.1 < 10 {
-            return true;
+    pub fn is_door(&self, position: (i32, i32)) -> bool {
+        match self.tile(position).tile_type {
+            TileType::Door(direction) => {
+                self.doors[&direction.to_string()]
+            },
+            _ => false
         }
-        if tile.0 == 15 && self.doors[&Direction::Right.to_string()] && tile.1 > 6 && tile.1 < 10 {
-            return true;
-        }
-        if tile.1 == 0 && self.doors[&Direction::Down.to_string()] && tile.0 > 6 && tile.0 < 10 {
-            return true;
-        }
-        if tile.1 == 15 && self.doors[&Direction::Up.to_string()] && tile.0 > 6 && tile.0 < 10 {
-            return true;
-        }
-        return false;
     }
 }
 
@@ -120,7 +94,7 @@ impl Default for Room {
 
 const BASIC_ROOM: [[TileType; ROOM_SIZE]; ROOM_SIZE] = [
     [TileType::None, TileType::None, TileType::None, TileType::None, TileType::None, TileType::None, TileType::Door(Direction::Up), TileType::Door(Direction::Up), TileType::Door(Direction::Up), TileType::Door(Direction::Up), TileType::None, TileType::None, TileType::None, TileType::None, TileType::None, TileType::None],
-    [TileType::None, TileType::Wall(WallType::InnerNorthWest), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::InnerNorthEast), TileType::None],
+    [TileType::None, TileType::Wall(WallType::InnerNorthWest), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::North), TileType::Wall(WallType::InnerNorthEast), TileType::None],
     [TileType::None, TileType::Wall(WallType::West), TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Wall(WallType::East), TileType::None],
     [TileType::None, TileType::Wall(WallType::West), TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Wall(WallType::East), TileType::None],
     [TileType::None, TileType::Wall(WallType::West), TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Wall(WallType::East), TileType::None],
@@ -133,6 +107,6 @@ const BASIC_ROOM: [[TileType; ROOM_SIZE]; ROOM_SIZE] = [
     [TileType::None, TileType::Wall(WallType::West), TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Wall(WallType::East), TileType::None],
     [TileType::None, TileType::Wall(WallType::West), TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Wall(WallType::East), TileType::None],
     [TileType::None, TileType::Wall(WallType::West), TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Wall(WallType::East), TileType::None],
-    [TileType::None, TileType::Wall(WallType::InnerSouthWest), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::InnerSouthEast), TileType::None],
+    [TileType::None, TileType::Wall(WallType::InnerSouthWest), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::South), TileType::Wall(WallType::InnerSouthEast), TileType::None],
     [TileType::None, TileType::None, TileType::None, TileType::None, TileType::None, TileType::None, TileType::Door(Direction::Down), TileType::Door(Direction::Down), TileType::Door(Direction::Down), TileType::Door(Direction::Down), TileType::None, TileType::None, TileType::None, TileType::None, TileType::None, TileType::None],
 ];

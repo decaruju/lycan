@@ -9,7 +9,8 @@ use std::{
 };
 use crate::client_state::{ClientGamestate};
 use lycan::shared::gamestate::{Player, Gamestate};
-use lycan::shared::room::{Room};
+use lycan::shared::room::{Room, Tile, TileType, WallType};
+use lycan::shared::utils::{Direction};
 use crate::http;
 
 pub enum GameResult {
@@ -87,21 +88,18 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
                 player.move_player(movement);
             }
             if gamestate.player_in_door() {
-                let player_room = gamestate.player_room().position;
-                let player_position = gamestate.player_tile();
-
-                let new_room = if player_position.0 == 0 {
-                    (player_room.0 - 1, player_room.1)
-                } else if player_position.0 == 15 {
-                    (player_room.0 + 1, player_room.1)
-                } else if player_position.1 == 0 {
-                    (player_room.0, player_room.1 - 1)
-                } else if player_position.1 == 15 {
-                    (player_room.0, player_room.1 + 1)
-                } else {
-                    (player_room.0, player_room.1)
-                };
-                gamestate.add_room(new_room);
+                let player_room = gamestate.player_room();
+                let position = player_room.position;
+                if let TileType::Door(direction) = player_room.tile(gamestate.player_tile()).tile_type {
+                    gamestate.add_room(
+                        match direction {
+                            Direction::Up => (position.0 - 1, position.1),
+                            Direction::Down => (position.0 + 1, position.1),
+                            Direction::Left => (position.0, position.1 - 1),
+                            Direction::Right => (position.0, position.1 + 1 ),
+                        }
+                    );
+                }
             } else if gamestate.player_in_wall() {
                 let mut player = gamestate.get_mut_player().unwrap();
                 player.move_player((-movement.0, -movement.1))
@@ -169,24 +167,66 @@ pub fn draw(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamestate>>) 
 pub fn draw_room(window: &mut RenderWindow, room: &Room) {
     for i in 0..16 {
         for j in 0..16 {
-            let x0 = (i * 32 + room.position.0*16*32) as f32;
-            let y0 = (j * 32 + room.position.1*16*32) as f32;
-            draw_tile(window, x0, y0, 32.0, 32.0, room.is_wall((i, j)), room.is_door((i, j)));
+            draw_tile(window, room, room.tile((i, j)));
         }
     }
 }
 
-pub fn draw_tile(window: &mut RenderWindow, x0: f32, y0: f32, width: f32, height: f32, is_wall: bool, is_door: bool) {
+pub fn draw_tile(window: &mut RenderWindow, room: &Room, tile: Tile) {
     let mut rectangle = RectangleShape::default();
-    rectangle.set_size((width, height));
+    rectangle.set_size((32., 32.));
     rectangle.set_outline_color(Color::BLUE);
-    if is_door {
-        rectangle.set_fill_color(Color::GREEN);
-    } else if is_wall {
-        rectangle.set_fill_color(Color::BLACK);
-    }
     rectangle.set_outline_thickness(2.0);
-    rectangle.set_position((x0, y0));
+    rectangle.set_position((
+        tile.x as f32 * 32.0 + room.position.0 as f32 * 16. * 32.,
+        tile.y as f32 * 32.0 + room.position.1 as f32 * 16. * 32.,
+    ));
+    match tile.tile_type {
+        TileType::Floor => (),
+        TileType::None => return,
+        TileType::Door(direction) => {
+            rectangle.set_fill_color(Color::GREEN);
+            match direction {
+                Direction::Up => {
+                },
+                Direction::Down => {
+                },
+                Direction::Left => {
+                },
+                Direction::Right => {
+                },
+            }
+        },
+        TileType::Wall(wall_type) => {
+            rectangle.set_fill_color(Color::BLACK);
+            match wall_type {
+                WallType::North => {
+                },
+                WallType::South => {
+                },
+                WallType::East => {
+                },
+                WallType::West => {
+                },
+                WallType::InnerNorthEast => {
+                },
+                WallType::InnerNorthWest => {
+                },
+                WallType::InnerSouthEast => {
+                },
+                WallType::InnerSouthWest => {
+                },
+                WallType::OuterNorthEast => {
+                },
+                WallType::OuterNorthWest => {
+                },
+                WallType::OuterSouthEast => {
+                },
+                WallType::OuterSouthWest => {
+                },
+            }
+        }
+    }
     window.draw(&rectangle);
 }
 
