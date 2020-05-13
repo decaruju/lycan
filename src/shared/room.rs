@@ -28,7 +28,7 @@ pub enum RoomType {
 impl RoomType {
     pub fn tile(&self, position: (i32, i32)) -> Tile {
         match self {
-            RoomType::Basic => Tile{x: position.0, y: position.1, tile_type: BASIC_ROOM.get(position.0 as usize).unwrap().get(position.1 as usize).unwrap().clone()}
+            RoomType::Basic => Tile{x: position.0, y: position.1, tile_type: BASIC_ROOM.get(position.1 as usize).unwrap().get(position.0 as usize).unwrap().clone()}
         }
     }
 }
@@ -72,6 +72,9 @@ impl Room {
     pub fn is_wall(&self, position: (i32, i32)) -> bool {
         match self.tile(position).tile_type {
             TileType::Wall(_) => true,
+            TileType::Door(direction) => {
+                !self.doors[&direction.to_string()]
+            },
             _ => false
         }
     }

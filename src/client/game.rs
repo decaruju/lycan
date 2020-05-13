@@ -93,10 +93,10 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
                 if let TileType::Door(direction) = player_room.tile(gamestate.player_tile()).tile_type {
                     gamestate.add_room(
                         match direction {
-                            Direction::Up => (position.0 - 1, position.1),
-                            Direction::Down => (position.0 + 1, position.1),
-                            Direction::Left => (position.0, position.1 - 1),
-                            Direction::Right => (position.0, position.1 + 1 ),
+                            Direction::Up => (position.0, position.1 - 1),
+                            Direction::Down => (position.0, position.1 + 1),
+                            Direction::Left => (position.0 - 1, position.1),
+                            Direction::Right => (position.0 + 1, position.1),
                         }
                     );
                 }
@@ -185,7 +185,11 @@ pub fn draw_tile(window: &mut RenderWindow, room: &Room, tile: Tile) {
         TileType::Floor => (),
         TileType::None => return,
         TileType::Door(direction) => {
-            rectangle.set_fill_color(Color::GREEN);
+            if room.is_door((tile.x, tile.y)) {
+                rectangle.set_fill_color(Color::GREEN);
+            } else {
+                rectangle.set_fill_color(Color::YELLOW);
+            }
             match direction {
                 Direction::Up => {
                 },
