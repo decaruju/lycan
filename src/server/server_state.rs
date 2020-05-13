@@ -62,9 +62,12 @@ impl ServerState {
         Some(uuid)
     }
 
-    pub fn update(&mut self, game_id: String, player_id: String, position: (f32, f32)) -> Option<&Gamestate> {
+    pub fn update(&mut self, game_id: String, player_id: String, position: (f32, f32), new_rooms: Vec<(i32, i32)>) -> Option<&Gamestate> {
         let game = self.games.get_mut(&game_id)?;
         game.update_player(player_id, position)?;
+        for room_pos in new_rooms {
+            game.gamestate.add_room(room_pos);
+        }
         Some(&game.gamestate)
     }
 }
