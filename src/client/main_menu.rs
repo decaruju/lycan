@@ -90,15 +90,22 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
                     );
                     menu_view.set_center(center);
                 }
+                Event::MouseButtonPressed { button, x, y } => match button {
+                    mouse::Button::Left => {
+                        println!("{} - {}", x, y);
+                        if startgame_button
+                            .background
+                            .global_bounds()
+                            .contains2(x as f32, y as f32)
+                        {
+                            return MenuChoice::StartGame;
+                        }
+                    }
+                    _ => {}
+                },
                 _ => {}
             }
         }
-
-        if Key::S.is_pressed() {
-            return MenuChoice::StartGame;
-        }
-        if mouse::Button::Left.is_pressed() {}
-        if Key::Space.is_pressed() {}
 
         window.clear(Color::BLUE);
         window.set_view(&menu_view);
