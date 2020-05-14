@@ -63,10 +63,15 @@ impl<'a> Drawable for MenuButton<'a> {
 pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoice {
     let mut theball = the_ball();
     let font = Font::from_file("resources/VCR_OSD_MONO_1.001.ttf").unwrap();
+
     let mut startgame_button = MenuButton::new(String::from("start the game"));
     startgame_button.title_text.set_font(&font);
+
+    let size = window.size();
+    let mut center = window
+        .map_pixel_to_coords_current_view(Vector2::from((size.x as i32 / 2, size.y as i32 / 2)));
     let mut menu_view = View::new(
-        Vector2::from((0., 0.)),
+        Vector2::from(center),
         Vector2::from((window.size().x as f32, window.size().y as f32)),
     );
     loop {
@@ -78,6 +83,13 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
                 } => return MenuChoice::Quit,
                 Event::MouseMoved { x, y } => theball
                     .set_position(window.map_pixel_to_coords(Vector2::from((x, y)), &menu_view)),
+                Event::Resized { width, height } => {
+                    center = window.map_pixel_to_coords(
+                        Vector2::from((width as i32 / 2, height as i32 / 2)),
+                        &menu_view,
+                    );
+                    menu_view.set_center(center);
+                }
                 _ => {}
             }
         }
@@ -85,15 +97,9 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
         if Key::S.is_pressed() {
             return MenuChoice::StartGame;
         }
-
         if mouse::Button::Left.is_pressed() {}
-
         if Key::Space.is_pressed() {}
 
-        let size = window.size();
-        let center_window = Vector2::from((size.x as i32 / 2, size.y as i32 / 2));
-        let center = window.map_pixel_to_coords(center_window, &menu_view);
-        menu_view.set_center(center);
         window.clear(Color::BLUE);
         window.set_view(&menu_view);
 
