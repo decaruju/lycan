@@ -1,10 +1,8 @@
 use lycan::shared::gamestate::{Gamestate, Player};
+use lycan::shared::http::UpdateResponse;
 use lycan::shared::room::Room;
 use lycan::shared::utils::Direction;
 use std::collections::HashMap;
-use lycan::shared::http::{
-    UpdateResponse,
-};
 
 pub struct ClientGamestate {
     pub gamestate: Gamestate,

@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt::Debug};
 
 use serde::{Deserialize, Serialize};
 
-use crate::shared::gamestate::{Gamestate, Player, Map};
+use crate::shared::gamestate::{Gamestate, Map, Player};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NewGameRequest {
