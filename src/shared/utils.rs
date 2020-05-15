@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize};
-use std::fmt::{ Debug };
+use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
 
 pub const ROOM_SIZE: usize = 16;
 
@@ -21,4 +21,3 @@ impl Direction {
         }
     }
 }
-

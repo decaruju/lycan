@@ -1,10 +1,10 @@
-use crate::shared::room::{Room};
-use crate::shared::utils::{Direction};
+use crate::shared::room::Room;
+use crate::shared::utils::Direction;
 
 use std::collections::HashMap;
-use std::fmt::{ Debug };
+use std::fmt::Debug;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Gamestate {
@@ -15,7 +15,7 @@ pub struct Gamestate {
 impl Gamestate {
     pub fn add_room(&mut self, position: (i32, i32)) {
         if !self.map.room(position.0, position.1).is_none() {
-            return
+            return;
         }
         self.map.add_room(position, Room::new(position));
         self.remove_doors(position);
@@ -27,14 +27,20 @@ impl Gamestate {
             (position.0, position.1 - 1),
             (position.0 - 1, position.1),
             (position.0 + 1, position.1),
-        ].iter() {
-            if self.map.room(room_pos.0, room_pos.1).is_none() && self.map.room_degree(*room_pos) > 1 {
+        ]
+        .iter()
+        {
+            if self.map.room(room_pos.0, room_pos.1).is_none()
+                && self.map.room_degree(*room_pos) > 1
+            {
                 for (room_pos, direction) in [
                     ((room_pos.0, room_pos.1 + 1), Direction::Down),
                     ((room_pos.0, room_pos.1 - 1), Direction::Up),
                     ((room_pos.0 - 1, room_pos.1), Direction::Right),
                     ((room_pos.0 + 1, room_pos.1), Direction::Left),
-                ].iter() {
+                ]
+                .iter()
+                {
                     match self.map.room_mut(room_pos.0, room_pos.1) {
                         Some(room) => {
                             *room.doors.get_mut(&direction.to_string()).unwrap() = false;
@@ -65,7 +71,7 @@ impl Map {
         match self.rooms.get_mut(&position.0) {
             Some(row) => {
                 row.insert(position.1, room);
-            },
+            }
             None => {
                 let mut row = HashMap::new();
                 row.insert(position.1, room);
@@ -81,14 +87,15 @@ impl Map {
             (position.0, position.1 - 1),
             (position.0 - 1, position.1),
             (position.0 + 1, position.1),
-        ].iter() {
+        ]
+        .iter()
+        {
             if !self.room(room_pos.0, room_pos.1).is_none() {
                 degree += 1;
             }
         }
         degree
     }
-
 }
 
 impl Default for Map {
@@ -97,12 +104,11 @@ impl Default for Map {
         let mut row = HashMap::new();
         row.insert(0, Room::default());
         rooms.insert(0, row);
-        Map{rooms}
+        Map { rooms }
     }
 }
 
-
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Player {
     pub name: String,
     pub position: (f32, f32),
@@ -123,12 +129,11 @@ pub struct Position {
 
 impl Default for Gamestate {
     fn default() -> Self {
-        Gamestate{players: HashMap::new(), map: Map::default()}
+        Gamestate {
+            players: HashMap::new(),
+            map: Map::default(),
+        }
     }
-}
-
-struct NewResponse {
-    pub game_id: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

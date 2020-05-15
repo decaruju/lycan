@@ -1,7 +1,7 @@
-use std::collections::HashMap;
 use lycan::shared::gamestate::{Gamestate, Player};
-use lycan::shared::room::{Room};
-use lycan::shared::utils::{Direction};
+use lycan::shared::room::Room;
+use lycan::shared::utils::Direction;
+use std::collections::HashMap;
 
 pub struct ClientGamestate {
     pub gamestate: Gamestate,
@@ -35,7 +35,13 @@ impl ClientGamestate {
     }
 
     pub fn set_player(&mut self, player_id: String) {
-        self.gamestate.players.insert(player_id.clone(), Player{name: String::from("foo"), position: (100.0, 100.0)});
+        self.gamestate.players.insert(
+            player_id.clone(),
+            Player {
+                name: String::from("foo"),
+                position: (100.0, 100.0),
+            },
+        );
         self.player_id = Some(player_id);
     }
 
@@ -49,8 +55,8 @@ impl ClientGamestate {
 
     pub fn player_room_coord(&self) -> (i32, i32) {
         let position = self.player_position();
-        let room_x = position.0/32./16.;
-        let room_y = position.1/32./16.;
+        let room_x = position.0 / 32. / 16.;
+        let room_y = position.1 / 32. / 16.;
         (room_x.floor() as i32, room_y.floor() as i32)
     }
 
@@ -61,14 +67,17 @@ impl ClientGamestate {
     pub fn player_tile(&self) -> (i32, i32) {
         let position = self.get_player().unwrap().position;
         (
-            (((position.0 as i32).rem_euclid(32*16)) as f32/32.0).floor() as i32,
-            (((position.1 as i32).rem_euclid(32*16)) as f32/32.0).floor() as i32,
+            (((position.0 as i32).rem_euclid(32 * 16)) as f32 / 32.0).floor() as i32,
+            (((position.1 as i32).rem_euclid(32 * 16)) as f32 / 32.0).floor() as i32,
         )
     }
 
     pub fn player_room(&self) -> &Room {
         let player_room_coord = self.player_room_coord();
-        self.gamestate.map.room(player_room_coord.0, player_room_coord.1).unwrap()
+        self.gamestate
+            .map
+            .room(player_room_coord.0, player_room_coord.1)
+            .unwrap()
     }
 
     pub fn player_in_wall(&self) -> bool {
@@ -85,7 +94,7 @@ impl ClientGamestate {
 
     pub fn add_room(&mut self, position: (i32, i32)) {
         if !self.gamestate.map.room(position.0, position.1).is_none() {
-            return
+            return;
         }
         self.new_rooms.push(position);
         self.gamestate.add_room(position);
@@ -126,15 +135,21 @@ impl ClientGamestate {
         self.gamestate.map = data.map;
         for (player_id, player_state) in data.players {
             if player_id == self.player_id.as_ref().unwrap().clone() {
-                continue
+                continue;
             }
             match self.gamestate.players.get_mut(&player_id) {
                 Some(player) => {
                     player.position = player_state.position;
-                },
+                }
                 None => {
-                    self.gamestate.players.insert(player_id, Player{position: player_state.position, name: player_state.name});
-                },
+                    self.gamestate.players.insert(
+                        player_id,
+                        Player {
+                            position: player_state.position,
+                            name: player_state.name,
+                        },
+                    );
+                }
             }
         }
     }

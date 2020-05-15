@@ -1,9 +1,8 @@
-use std::collections::HashMap;
-use std::fmt::Debug;
-
-use lycan::shared::gamestate::{Gamestate, Player};
+use std::{collections::HashMap, fmt::Debug};
 
 use uuid::Uuid;
+
+use lycan::shared::gamestate::{Gamestate, Player};
 
 #[derive(Debug)]
 pub struct ServerGamestate {
@@ -18,20 +17,16 @@ impl ServerGamestate {
     }
 
     pub fn add_player(&mut self, uuid: String, player_name: String) {
-        self.gamestate.players.insert(uuid, Player{ name: player_name, position: (0.0, 0.0) });
+        self.gamestate.players.insert(
+            uuid,
+            Player {
+                name: player_name,
+                position: (0.0, 0.0),
+            },
+        );
     }
 
-    pub fn dump_players(&self) -> String {
-        format!(
-            "{:?}",
-            self.gamestate
-                .players
-                .iter()
-                .map(|(_uuid, player)| player.name.clone())
-        )
-    }
-
-    pub fn update_player(&mut self, player_id: String, position: (f32, f32)) -> Option<()>{
+    pub fn update_player(&mut self, player_id: String, position: (f32, f32)) -> Option<()> {
         let player = self.gamestate.players.get_mut(&player_id)?;
         player.position = position;
         Some(())
@@ -49,7 +44,7 @@ impl ServerState {
         }
     }
 
-    pub fn new_game(&mut self) -> String {
+    pub fn new_game(&mut self, _public: bool) -> String {
         let uuid = Uuid::new_v4().to_string();
         self.games.insert(uuid.clone(), ServerGamestate::new());
         uuid
@@ -62,7 +57,13 @@ impl ServerState {
         Some(uuid)
     }
 
-    pub fn update(&mut self, game_id: String, player_id: String, position: (f32, f32), new_rooms: Vec<(i32, i32)>) -> Option<&Gamestate> {
+    pub fn update(
+        &mut self,
+        game_id: String,
+        player_id: String,
+        position: (f32, f32),
+        new_rooms: Vec<(i32, i32)>,
+    ) -> Option<&Gamestate> {
         let game = self.games.get_mut(&game_id)?;
         game.update_player(player_id, position)?;
         for room_pos in new_rooms {

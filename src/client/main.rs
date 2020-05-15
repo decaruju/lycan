@@ -1,28 +1,26 @@
-mod http;
-mod displayer;
 mod client_state;
+mod displayer;
+mod http;
 extern crate sfml;
 use sfml::{
-    graphics::{RenderWindow},
+    graphics::RenderWindow,
     window::{ContextSettings, Style},
 };
-use std::{
-    sync::{Arc, RwLock},
-};
+use std::sync::{Arc, RwLock};
 
 mod game;
 mod main_menu;
 mod settings;
 
+use client_state::ClientGamestate;
 use game::{start_game, GameResult};
 use main_menu::{main_menu, MenuChoice};
-use client_state::{ClientGamestate};
 
 use settings::Settings;
 
-
 fn main() {
-    let mut gamestate: Arc<RwLock<ClientGamestate>> = Arc::new(RwLock::new(ClientGamestate::load(String::from("test"))));
+    let mut gamestate: Arc<RwLock<ClientGamestate>> =
+        Arc::new(RwLock::new(ClientGamestate::load(String::from("test"))));
     match http::new_game() {
         Ok(game_id) => {
             println!("{}", game_id);
@@ -33,10 +31,10 @@ fn main() {
                     let mut gamestate = gamestate.write().unwrap();
                     gamestate.set_game(game_id);
                     gamestate.set_player(player_id);
-                },
+                }
                 Err(err) => println!("{}", err),
             }
-        },
+        }
         Err(err) => println!("{}", err),
     }
 
