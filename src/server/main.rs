@@ -39,7 +39,6 @@ async fn update(req: Request<Body>, state: State) -> Result<Response<Body>> {
 
     let payload: UpdatePayload = serde_json::from_value(data).unwrap();
     let mut state = state.write().unwrap();
-    println!("{:?}", payload.new_rooms);
     match state.update(payload.game_id.clone(), payload.player_id.clone(), payload.position, payload.new_rooms) {
         Some(game_state) => {
             let response = Response::builder()

@@ -1,6 +1,7 @@
 use sfml::{
-    graphics::{CircleShape, Color, RenderTarget, RenderWindow, Shape, Transformable, RectangleShape, View},
+    graphics::{CircleShape, Color, RenderTarget, RenderWindow, Shape, Transformable, RectangleShape, View, Texture, Sprite, IntRect},
     window::{Event, Key},
+    system::{SfBox},
 };
 use std::{
     sync::{Arc, RwLock},
@@ -8,6 +9,7 @@ use std::{
     time::Duration,
 };
 use crate::client_state::{ClientGamestate};
+use crate::displayer::{Displayer};
 use lycan::shared::gamestate::{Player, Gamestate};
 use lycan::shared::room::{Room, Tile, TileType, WallType};
 use lycan::shared::utils::{Direction};
@@ -19,6 +21,7 @@ pub enum GameResult {
 }
 
 pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamestate>>) -> GameResult {
+    let displayer = Displayer::new();
     let thread_gamestate = Arc::clone(&gamestate);
     thread::spawn(move || {
         loop {
@@ -109,8 +112,7 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
             // println!("player{:?}, in_wall{:?}, in_door{:?}, room{:?}, tile{:?}", gamestate.player_position(), gamestate.player_in_wall(), gamestate.player_in_wall(), gamestate.player_room_coord(), gamestate.player_tile());
         }
 
-
-        draw(window, Arc::clone(&gamestate));
+        displayer.display(window, Arc::clone(&gamestate));
         thread::sleep(Duration::from_millis(1));
     }
 }
@@ -153,92 +155,7 @@ fn move_center(window: &mut RenderWindow, direction: (f32, f32)) {
     window.set_view(&new_view);
 }
 
-pub fn draw(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamestate>>) {
-    window.clear(Color::RED);
-    for room in gamestate.read().unwrap().get_rooms() {
-        draw_room(window, &room);
-    }
-    for (id, player) in gamestate.read().unwrap().get_players() {
-        window.draw(&ball(player.position));
-    }
-    window.display();
+pub fn draw(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamestate>>, wall_sprite: &Sprite) {
 }
 
-pub fn draw_room(window: &mut RenderWindow, room: &Room) {
-    for i in 0..16 {
-        for j in 0..16 {
-            draw_tile(window, room, room.tile((i, j)));
-        }
-    }
-}
 
-pub fn draw_tile(window: &mut RenderWindow, room: &Room, tile: Tile) {
-    let mut rectangle = RectangleShape::default();
-    rectangle.set_size((32., 32.));
-    rectangle.set_outline_color(Color::BLUE);
-    rectangle.set_outline_thickness(2.0);
-    rectangle.set_position((
-        tile.x as f32 * 32.0 + room.position.0 as f32 * 16. * 32.,
-        tile.y as f32 * 32.0 + room.position.1 as f32 * 16. * 32.,
-    ));
-    match tile.tile_type {
-        TileType::Floor => (),
-        TileType::None => return,
-        TileType::Door(direction) => {
-            if room.is_door((tile.x, tile.y)) {
-                rectangle.set_fill_color(Color::GREEN);
-            } else {
-                rectangle.set_fill_color(Color::YELLOW);
-            }
-            match direction {
-                Direction::Up => {
-                },
-                Direction::Down => {
-                },
-                Direction::Left => {
-                },
-                Direction::Right => {
-                },
-            }
-        },
-        TileType::Wall(wall_type) => {
-            rectangle.set_fill_color(Color::BLACK);
-            match wall_type {
-                WallType::North => {
-                },
-                WallType::South => {
-                },
-                WallType::East => {
-                },
-                WallType::West => {
-                },
-                WallType::InnerNorthEast => {
-                },
-                WallType::InnerNorthWest => {
-                },
-                WallType::InnerSouthEast => {
-                },
-                WallType::InnerSouthWest => {
-                },
-                WallType::OuterNorthEast => {
-                },
-                WallType::OuterNorthWest => {
-                },
-                WallType::OuterSouthEast => {
-                },
-                WallType::OuterSouthWest => {
-                },
-            }
-        }
-    }
-    window.draw(&rectangle);
-}
-
-pub fn ball<'a>(position: (f32, f32)) -> CircleShape<'a> {
-    let mut ball = CircleShape::default();
-    ball.set_radius(20.);
-    ball.set_origin((20./2., 20./2.));
-    ball.set_fill_color(Color::YELLOW);
-    ball.set_position(position);
-    ball
-}

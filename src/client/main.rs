@@ -1,4 +1,5 @@
 mod http;
+mod displayer;
 mod client_state;
 extern crate sfml;
 use sfml::{
