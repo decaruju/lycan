@@ -1,45 +1,53 @@
+use crate::client_state::ClientGamestate;
+use crate::displayer::Displayer;
+use crate::http;
+use lycan::shared::gamestate::{Gamestate, Player};
+use lycan::shared::room::{Room, Tile, TileType, WallType};
+use lycan::shared::utils::Direction;
 use sfml::{
-    graphics::{CircleShape, Color, RenderTarget, RenderWindow, Shape, Transformable, RectangleShape, View, Texture, Sprite, IntRect},
+    graphics::{
+        CircleShape, Color, IntRect, RectangleShape, RenderTarget, RenderWindow, Shape, Sprite,
+        Texture, Transformable, View,
+    },
+    system::SfBox,
     window::{Event, Key},
-    system::{SfBox},
 };
 use std::{
     sync::{Arc, RwLock},
     thread,
     time::Duration,
 };
-use crate::client_state::{ClientGamestate};
-use crate::displayer::{Displayer};
-use lycan::shared::gamestate::{Player, Gamestate};
-use lycan::shared::room::{Room, Tile, TileType, WallType};
-use lycan::shared::utils::{Direction};
-use crate::http;
 
 pub enum GameResult {
     Menu,
     Quit,
 }
 
-pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamestate>>) -> GameResult {
+pub fn start_game(
+    window: &mut RenderWindow,
+    gamestate: Arc<RwLock<ClientGamestate>>,
+) -> GameResult {
     let displayer = Displayer::new();
     let thread_gamestate = Arc::clone(&gamestate);
-    thread::spawn(move || {
-        loop {
-            {
-                let game_id = thread_gamestate.read().unwrap().get_game_id().clone();
-                let player_id = thread_gamestate.read().unwrap().get_player_id().clone();
-                let position = thread_gamestate.read().unwrap().get_player().unwrap().position;
-                let new_rooms = thread_gamestate.write().unwrap().get_new_rooms();
-                match http::update(&game_id, &player_id, position, new_rooms) {
-                    Ok(data) => {
-                        let new_state: Gamestate = serde_json::from_str(&data).unwrap();
-                        thread_gamestate.write().unwrap().update(new_state);
-                    },
-                    Err(err) => println!("{}", err),
-                };
-            }
-            thread::sleep(Duration::from_millis(15));
+    thread::spawn(move || loop {
+        {
+            let game_id = thread_gamestate.read().unwrap().get_game_id().clone();
+            let player_id = thread_gamestate.read().unwrap().get_player_id().clone();
+            let position = thread_gamestate
+                .read()
+                .unwrap()
+                .get_player()
+                .unwrap()
+                .position;
+            let new_rooms = thread_gamestate.write().unwrap().get_new_rooms();
+            match http::update(&game_id, &player_id, position, new_rooms) {
+                Ok(data) => {
+                    thread_gamestate.write().unwrap().update(data);
+                }
+                Err(err) => println!("{}", err),
+            };
         }
+        thread::sleep(Duration::from_millis(15));
     });
 
     loop {
@@ -93,15 +101,15 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
             if gamestate.player_in_door() {
                 let player_room = gamestate.player_room();
                 let position = player_room.position;
-                if let TileType::Door(direction) = player_room.tile(gamestate.player_tile()).tile_type {
-                    gamestate.add_room(
-                        match direction {
-                            Direction::Up => (position.0, position.1 + 1),
-                            Direction::Down => (position.0, position.1 - 1),
-                            Direction::Left => (position.0 - 1, position.1),
-                            Direction::Right => (position.0 + 1, position.1),
-                        }
-                    );
+                if let TileType::Door(direction) =
+                    player_room.tile(gamestate.player_tile()).tile_type
+                {
+                    gamestate.add_room(match direction {
+                        Direction::Up => (position.0, position.1 + 1),
+                        Direction::Down => (position.0, position.1 - 1),
+                        Direction::Left => (position.0 - 1, position.1),
+                        Direction::Right => (position.0 + 1, position.1),
+                    });
                 }
             } else if gamestate.player_in_wall() {
                 let mut player = gamestate.get_mut_player().unwrap();
@@ -120,26 +128,29 @@ pub fn start_game(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamesta
 pub fn zoom_out(window: &mut RenderWindow) {
     let view = window.view();
     let mut new_view = View::new(view.center(), view.size());
-    new_view.set_size(view.size()*0.99);
+    new_view.set_size(view.size() * 0.99);
     window.set_view(&new_view);
 }
 
 pub fn zoom_in(window: &mut RenderWindow) {
     let view = window.view();
     let mut new_view = View::new(view.center(), view.size());
-    new_view.set_size(view.size()/0.99);
+    new_view.set_size(view.size() / 0.99);
     window.set_view(&new_view);
 }
 
 pub fn center_view(window: &mut RenderWindow, player: &Player) {
-    let player_position = window.map_coords_to_pixel_current_view(sfml::system::Vector2{x: player.position.0, y: player.position.1});
-    let direction = if player_position.x - (window.size().x/2) as i32 > 100 {
+    let player_position = window.map_coords_to_pixel_current_view(sfml::system::Vector2 {
+        x: player.position.0,
+        y: player.position.1,
+    });
+    let direction = if player_position.x - (window.size().x / 2) as i32 > 100 {
         (10.0, 0.0)
-    } else if (window.size().x/2) as i32 - player_position.x > 100 {
+    } else if (window.size().x / 2) as i32 - player_position.x > 100 {
         (-10.0, 0.0)
-    } else if (window.size().y/2) as i32 - player_position.y > 100 {
+    } else if (window.size().y / 2) as i32 - player_position.y > 100 {
         (0.0, -10.0)
-    } else if player_position.y - (window.size().y/2) as i32 > 100 {
+    } else if player_position.y - (window.size().y / 2) as i32 > 100 {
         (0.0, 10.0)
     } else {
         (0.0, 0.0)
@@ -155,7 +166,9 @@ fn move_center(window: &mut RenderWindow, direction: (f32, f32)) {
     window.set_view(&new_view);
 }
 
-pub fn draw(window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamestate>>, wall_sprite: &Sprite) {
+pub fn draw(
+    window: &mut RenderWindow,
+    gamestate: Arc<RwLock<ClientGamestate>>,
+    wall_sprite: &Sprite,
+) {
 }
-
-
