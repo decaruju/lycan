@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt::Debug};
 
 use serde::{Deserialize, Serialize};
 
-use crate::shared::gamestate::{Gamestate, Player};
+use crate::shared::gamestate::{Gamestate, Player, Map};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NewGameRequest {
@@ -35,13 +35,15 @@ pub struct UpdateRequest {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateResponse {
-    players: HashMap<String, Player>,
+    pub players: HashMap<String, Player>,
+    pub map: Map,
 }
 
 impl UpdateResponse {
     pub fn new(gamestate: &Gamestate) -> UpdateResponse {
         UpdateResponse {
             players: gamestate.players.clone(),
+            map: gamestate.map.clone(),
         }
     }
 }

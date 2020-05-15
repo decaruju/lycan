@@ -42,8 +42,7 @@ pub fn start_game(
             let new_rooms = thread_gamestate.write().unwrap().get_new_rooms();
             match http::update(&game_id, &player_id, position, new_rooms) {
                 Ok(data) => {
-                    let new_state: Gamestate = serde_json::from_str(&data).unwrap();
-                    thread_gamestate.write().unwrap().update(new_state);
+                    thread_gamestate.write().unwrap().update(data);
                 }
                 Err(err) => println!("{}", err),
             };

@@ -12,14 +12,14 @@ pub enum TileType {
     Door(Direction),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Room {
     pub doors: HashMap<String, bool>,
     pub position: (i32, i32),
     pub room_type: RoomType,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum RoomType {
     Basic,
 }

@@ -53,7 +53,7 @@ impl Gamestate {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Map {
     pub rooms: HashMap<i32, HashMap<i32, Room>>,
 }

@@ -2,6 +2,9 @@ use lycan::shared::gamestate::{Gamestate, Player};
 use lycan::shared::room::Room;
 use lycan::shared::utils::Direction;
 use std::collections::HashMap;
+use lycan::shared::http::{
+    UpdateResponse,
+};
 
 pub struct ClientGamestate {
     pub gamestate: Gamestate,
@@ -131,7 +134,7 @@ impl ClientGamestate {
         }
     }
 
-    pub fn update(&mut self, data: Gamestate) {
+    pub fn update(&mut self, data: UpdateResponse) {
         self.gamestate.map = data.map;
         for (player_id, player_state) in data.players {
             if player_id == self.player_id.as_ref().unwrap().clone() {
