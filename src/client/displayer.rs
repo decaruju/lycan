@@ -1,25 +1,14 @@
-use std::{
-    sync::{Arc, RwLock},
-};
+use crate::client_state::ClientGamestate;
+use lycan::shared::room::{Room, Tile, TileType, WallType};
+use lycan::shared::utils::Direction;
 use sfml::{
     graphics::{
-        CircleShape,
-        Color,
-        RenderWindow,
-        RenderTarget,
-        Sprite,
-        Shape,
-        Texture,
+        CircleShape, Color, IntRect, RenderTarget, RenderWindow, Shape, Sprite, Texture,
         Transformable,
-        IntRect,
     },
-    system::{
-        SfBox,
-    },
+    system::SfBox,
 };
-use crate::client_state::{ClientGamestate};
-use lycan::shared::room::{Room, Tile, TileType, WallType};
-use lycan::shared::utils::{Direction};
+use std::sync::{Arc, RwLock};
 
 pub struct Displayer {
     texture: SfBox<Texture>,
@@ -28,49 +17,24 @@ pub struct Displayer {
 impl Displayer {
     pub fn new() -> Displayer {
         let texture = Texture::from_file("resources/cave_tileset.png").unwrap();
-        // let mut floor_sprite = Sprite::with_texture(&texture);
-        // floor_sprite.set_texture_rect(&IntRect::new(32, 156, 32, 32));
 
-        Displayer{texture}
+        Displayer { texture }
     }
     fn sprite(&self, x: i32, y: i32) -> Sprite {
         let mut sprite = Sprite::with_texture(&self.texture);
-        sprite.set_texture_rect(&IntRect::new(x, y, 32, 32));
-        sprite.set_origin((16., 16.));
+        sprite.set_texture_rect(&IntRect::new(x, y, 16, 16));
+        sprite.set_origin((8., 8.));
         sprite
     }
 
-    fn wall_sprite(&self) -> Sprite {
-        self.sprite(0, 156)
-    }
-
-    fn inner_corner_sprite(&self) -> Sprite {
-        self.sprite(0, 140)
-    }
-
-    fn outer_corner_sprite(&self) -> Sprite {
-        self.sprite(0, 192)
-    }
-
-    fn floor_sprite(&self) -> Sprite {
-        self.sprite(32, 156)
-    }
-
-    fn none_sprite(&self) -> Sprite {
-        self.sprite(32, 188)
-    }
-
-    fn player_sprite(&self) -> Sprite {
-        self.sprite(226, 128)
-    }
-
     pub fn display(&self, window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamestate>>) {
-        window.clear(Color::rgb(34, 32, 52));
+        window.clear(Color::rgb(60, 44, 41));
         for room in gamestate.read().unwrap().get_rooms() {
             self.draw_room(window, &room);
         }
         for (id, player) in gamestate.read().unwrap().get_players() {
-            let mut player_sprite = self.player_sprite();
+            let mut player_sprite = CircleShape::new(4.0, 100);
+            player_sprite.set_origin((4.0, 4.0));
             player_sprite.set_position(player.position);
             window.draw(&player_sprite);
         }
@@ -87,105 +51,39 @@ impl Displayer {
 
     fn draw_tile(&self, window: &mut RenderWindow, room: &Room, tile: Tile) {
         let mut sprite = match tile.tile_type {
-            TileType::Floor => self.floor_sprite(),
+            TileType::Floor => self.sprite(18, 18),
             TileType::Door(direction) => {
                 if room.doors[&direction.to_string()] {
-                    self.floor_sprite()
+                    self.sprite(18, 18)
                 } else {
                     match direction {
-                        Direction::Up => {
-                            let mut wall_sprite = self.wall_sprite();
-                            wall_sprite.rotate(280.);
-                            wall_sprite
-                        },
-                        Direction::Down => {
-                            let mut wall_sprite = self.wall_sprite();
-                            wall_sprite.rotate(90.);
-                            wall_sprite
-                        },
-                        Direction::Left => {
-                            let mut wall_sprite = self.wall_sprite();
-                            wall_sprite
-                        },
-                        Direction::Right => {
-                            let mut wall_sprite = self.wall_sprite();
-                            wall_sprite.rotate(180.);
-                            wall_sprite
-                        },
+                        Direction::Up => self.sprite(18, 52),
+                        Direction::Down => self.sprite(18, 0),
+                        Direction::Left => self.sprite(0, 18),
+                        Direction::Right => self.sprite(35, 18),
                     }
                 }
-            },
-            TileType::Wall(wall_type) => {
-                match wall_type {
-                    WallType::East => {
-                        let mut wall_sprite = self.wall_sprite();
-                        wall_sprite.rotate(180.);
-                        wall_sprite
-                    },
-                    WallType::West => {
-                        let mut wall_sprite = self.wall_sprite();
-                        wall_sprite
-                    },
-                    WallType::North => {
-                        let mut wall_sprite = self.wall_sprite();
-                        wall_sprite.rotate(270.);
-                        wall_sprite
-                    },
-                    WallType::South => {
-                        let mut wall_sprite = self.wall_sprite();
-                        wall_sprite.rotate(90.);
-                        wall_sprite
-                    },
-                    WallType::InnerNorthEast => {
-                        let mut wall_sprite = self.inner_corner_sprite();
-                        wall_sprite.rotate(180.);
-                        wall_sprite
-                    },
-                    WallType::InnerNorthWest => {
-                        let mut wall_sprite = self.inner_corner_sprite();
-                        wall_sprite.rotate(270.);
-                        wall_sprite
-                    },
-                    WallType::InnerSouthEast => {
-                        let mut wall_sprite = self.inner_corner_sprite();
-                        wall_sprite.rotate(90.);
-                        wall_sprite
-                    },
-                    WallType::InnerSouthWest => {
-                        let mut wall_sprite = self.inner_corner_sprite();
-                        wall_sprite
-                    },
-                    WallType::OuterNorthEast => {
-                        let mut wall_sprite = self.outer_corner_sprite();
-                        wall_sprite.rotate(180.);
-                        wall_sprite
-                    },
-                    WallType::OuterNorthWest => {
-                        let mut wall_sprite = self.outer_corner_sprite();
-                        wall_sprite.rotate(180.);
-                        wall_sprite.scale((-1., 1.));
-                        wall_sprite
-                    },
-                    WallType::OuterSouthWest => {
-                        let mut wall_sprite = self.outer_corner_sprite();
-                        wall_sprite
-                    },
-                    WallType::OuterSouthEast => {
-                        let mut wall_sprite = self.outer_corner_sprite();
-                        wall_sprite.scale((-1., 1.));
-                        wall_sprite
-                    },
-                    _ => {
-                        let mut wall_sprite = self.wall_sprite();
-                        wall_sprite
-                    },
-                }
-            },
-            _ => self.none_sprite(),
+            }
+            TileType::Wall(wall_type) => match wall_type {
+                WallType::East => self.sprite(35, 18),
+                WallType::West => self.sprite(0, 18),
+                WallType::North => self.sprite(18, 0),
+                WallType::South => self.sprite(18, 52),
+                WallType::InnerNorthEast => self.sprite(35, 0),
+                WallType::InnerNorthWest => self.sprite(0, 0),
+                WallType::InnerSouthEast => self.sprite(35, 52),
+                WallType::InnerSouthWest => self.sprite(0, 52),
+                WallType::OuterNorthEast => self.sprite(52, 35),
+                WallType::OuterNorthWest => self.sprite(69, 35),
+                WallType::OuterSouthEast => self.sprite(52, 18),
+                WallType::OuterSouthWest => self.sprite(69, 18),
+                _ => return,
+            }
+            _ => return,
         };
         sprite.set_position((
-            tile.x as f32 * 32.0 + room.position.0 as f32 * 16. * 32. + 16.,
-            tile.y as f32 * 32.0 + room.position.1 as f32 * 16. * 32. + 16.,
+            tile.x as f32 * 16.0 + room.position.0 as f32 * 16. * 16. + 8.,
+            tile.y as f32 * 16.0 + room.position.1 as f32 * 16. * 16. + 8.,
         ));
         window.draw(&sprite);
     }

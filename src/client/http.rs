@@ -1,47 +1,64 @@
-use std::collections::HashMap;
 use reqwest;
 
-pub fn new_game() -> Result<String, Box<dyn std::error::Error>> {
+use serde::{Deserialize, Serialize};
+
+use lycan::shared::http::{
+    JoinGameRequest, JoinGameResponse, NewGameRequest, NewGameResponse, UpdateRequest,
+    UpdateResponse,
+};
+
+type ClientResult<T> = Result<T, Box<dyn std::error::Error>>;
+
+fn post<'a, T, S>(url: &str, payload: T) -> Result<S, Box<dyn std::error::Error>>
+where
+    T: Serialize,
+    S: for<'de> Deserialize<'de>,
+{
     let client = reqwest::blocking::Client::new();
-    match client.post("http://localhost:1337/new").send()?.text() {
-        Ok(data) => {
-            let res: serde_json::Value = serde_json::from_str(&data)?;
-            if let serde_json::Value::Object(map) = res {
-                if let Some(serde_json::Value::String(game_id)) = map.get("game_id") {
-                    return Ok(game_id.to_string());
-                }
-            }
-        },
-        Err(err) => panic!(err),
+    match client
+        .post(url)
+        .body(serde_json::to_string(&payload)?)
+        .send()
+    {
+        Ok(data) => Ok(data.json()?),
+        Err(err) => Err(Box::new(err)),
     }
-    Ok(String::from(""))
 }
 
-pub fn join_game(game_id: &str) -> Result<String, Box<dyn std::error::Error>> {
-    let client = reqwest::blocking::Client::new();
-    match client.post("http://localhost:1337/join")
-        .body(serde_json::json!({ "game_id": game_id, "player_name": "foo" }).to_string())
-        .send()?.text() {
-            Ok(data) => {
-                let res: serde_json::Value = serde_json::from_str(&data)?;
-                if let serde_json::Value::Object(map) = res {
-                    if let Some(serde_json::Value::String(player_id)) = map.get("player_id") {
-                        return Ok(player_id.to_string());
-                    }
-                }
-            },
-            Err(err) => panic!(err),
-        }
-    Ok(String::from(""))
+pub fn new_game() -> ClientResult<String> {
+    let response: NewGameResponse =
+        post("http://localhost:1337/new", NewGameRequest { public: true }).unwrap();
+    Ok(response.game_id)
 }
 
-pub fn update(game_id: &str, player_id: &str, position: (f32, f32), new_rooms: Vec<(i32, i32)>) -> Result<String, Box<dyn std::error::Error>> {
-    let client = reqwest::blocking::Client::new();
-    match client.post("http://localhost:1337/update")
-        .body(serde_json::json!({ "game_id": game_id, "player_id": player_id, "position": [position.0, position.1], "new_rooms": new_rooms }).to_string())
-        .send()?
-        .text() {
-            Ok(data) => return Ok(data),
-            Err(err) => panic!(err),
-        }
+pub fn join_game(game_id: &str) -> ClientResult<String> {
+    let response: JoinGameResponse = post(
+        "http://localhost:1337/join",
+        JoinGameRequest {
+            game_id: game_id.to_string(),
+            player_name: "".to_string(),
+        },
+    )
+    .unwrap();
+    Ok(response.player_id)
+}
+
+pub fn update(
+    game_id: &str,
+    player_id: &str,
+    position: (f32, f32),
+    new_rooms: Vec<(i32, i32)>,
+) -> ClientResult<UpdateResponse> {
+    let response: UpdateResponse = post(
+        "http://localhost:1337/update",
+        UpdateRequest {
+            game_id: game_id.to_string(),
+            player_id: player_id.to_string(),
+            position,
+            new_rooms,
+        },
+    )
+    .unwrap();
+
+    Ok(response)
 }

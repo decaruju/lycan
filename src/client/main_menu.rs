@@ -77,6 +77,7 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
 pub fn the_ball<'a>() -> CircleShape<'a> {
     let mut ball = CircleShape::default();
     ball.set_radius(20.);
+    ball.set_origin((20., 20.));
     ball.set_fill_color(Color::BLACK);
     ball
 }
