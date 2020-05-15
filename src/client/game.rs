@@ -50,6 +50,11 @@ pub fn start_game(
         thread::sleep(Duration::from_millis(15));
     });
 
+    {
+        let view = window.view();
+        window.set_view(&View::new(view.center(), view.size()/2.0));
+    }
+
     loop {
         while let Some(event) = window.poll_event() {
             match event {
@@ -73,16 +78,16 @@ pub fn start_game(
         let mut movement = (0.0, 0.0);
 
         if Key::A.is_pressed() {
-            movement.0 -= 10.0;
+            movement.0 -= 3.0;
         }
         if Key::D.is_pressed() {
-            movement.0 += 10.0;
+            movement.0 += 3.0;
         }
         if Key::W.is_pressed() {
-            movement.1 -= 10.0;
+            movement.1 -= 3.0;
         }
         if Key::S.is_pressed() {
-            movement.1 += 10.0;
+            movement.1 += 3.0;
         }
         if Key::Z.is_pressed() {
             zoom_in(window);
@@ -121,7 +126,7 @@ pub fn start_game(
         }
 
         displayer.display(window, Arc::clone(&gamestate));
-        thread::sleep(Duration::from_millis(1));
+        thread::sleep(Duration::from_millis(15));
     }
 }
 
@@ -144,17 +149,27 @@ pub fn center_view(window: &mut RenderWindow, player: &Player) {
         x: player.position.0,
         y: player.position.1,
     });
-    let direction = if player_position.x - (window.size().x / 2) as i32 > 100 {
-        (10.0, 0.0)
-    } else if (window.size().x / 2) as i32 - player_position.x > 100 {
-        (-10.0, 0.0)
-    } else if (window.size().y / 2) as i32 - player_position.y > 100 {
-        (0.0, -10.0)
-    } else if player_position.y - (window.size().y / 2) as i32 > 100 {
-        (0.0, 10.0)
-    } else {
-        (0.0, 0.0)
-    };
+    let center_x = (window.size().x / 2) as i32;
+    let center_y = (window.size().y / 2) as i32;
+    let buffer_x = (window.size().x/4) as i32;
+    let buffer_y = (window.size().y/4) as i32;
+    let direction = (
+        if (player_position.x - center_x > buffer_x) {
+            std::cmp::min(player_position.x - center_x - buffer_x, 3)
+        } else if (center_x - player_position.x > buffer_x) {
+            std::cmp::max(player_position.x - center_x + buffer_x, -3)
+        } else {
+            0
+        } as f32,
+        if (player_position.y - center_y > buffer_y) {
+            std::cmp::min(player_position.y - center_y - buffer_y, 3)
+        } else if (center_y - player_position.y > buffer_y) {
+            std::cmp::max(player_position.y - center_y + buffer_y, -3)
+        } else {
+            0
+        } as f32,
+    );
+    println!("{:?}", direction);
     move_center(window, direction)
 }
 

@@ -56,8 +56,8 @@ impl ClientGamestate {
 
     pub fn player_room_coord(&self) -> (i32, i32) {
         let position = self.player_position();
-        let room_x = position.0 / 32. / 16.;
-        let room_y = position.1 / 32. / 16.;
+        let room_x = position.0 / 16. / 16.;
+        let room_y = position.1 / 16. / 16.;
         (room_x.floor() as i32, room_y.floor() as i32)
     }
 
@@ -68,8 +68,8 @@ impl ClientGamestate {
     pub fn player_tile(&self) -> (i32, i32) {
         let position = self.get_player().unwrap().position;
         (
-            (((position.0 as i32).rem_euclid(32 * 16)) as f32 / 32.0).floor() as i32,
-            (((position.1 as i32).rem_euclid(32 * 16)) as f32 / 32.0).floor() as i32,
+            (((position.0 as i32).rem_euclid(16 * 16)) as f32 / 16.0).floor() as i32,
+            (((position.1 as i32).rem_euclid(16 * 16)) as f32 / 16.0).floor() as i32,
         )
     }
 
