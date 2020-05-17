@@ -16,11 +16,10 @@ pub enum MenuChoice {
 }
 
 pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoice {
-    let mut theball = the_ball();
     let font = Font::from_file("resources/VCR_OSD_MONO_1.001.ttf").unwrap();
 
     let mut startgame_button =
-        button::MenuButton::new((300., 100.), String::from("start the game"));
+        button::MenuButton::new((300., 100.), String::from("start the game"), &font);
     startgame_button.title_text.set_font(&font);
 
     let size = window.size();
@@ -37,8 +36,7 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
                 | Event::KeyPressed {
                     code: Key::Escape, ..
                 } => return MenuChoice::Quit,
-                Event::MouseMoved { x, y } => theball
-                    .set_position(window.map_pixel_to_coords(Vector2::from((x, y)), &menu_view)),
+                Event::MouseMoved { x, y } => {}
                 Event::Resized { width, height } => {
                     center = window.map_pixel_to_coords(
                         Vector2::from((width as i32 / 2, height as i32 / 2)),
@@ -49,11 +47,7 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
                 Event::MouseButtonPressed { button, x, y } => match button {
                     mouse::Button::Left => {
                         println!("{} - {}", x, y);
-                        if startgame_button
-                            .background
-                            .global_bounds()
-                            .contains2(x as f32, y as f32)
-                        {
+                        if startgame_button.get_bounds().contains2(x as f32, y as f32) {
                             return MenuChoice::StartGame;
                         }
                     }
@@ -69,15 +63,6 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
         startgame_button.set_position((center.x, center.y));
 
         window.draw(&startgame_button);
-        window.draw(&theball);
         window.display();
     }
-}
-
-pub fn the_ball<'a>() -> CircleShape<'a> {
-    let mut ball = CircleShape::default();
-    ball.set_radius(20.);
-    ball.set_origin((20., 20.));
-    ball.set_fill_color(Color::BLACK);
-    ball
 }
