@@ -11,6 +11,7 @@ use std::sync::{Arc, RwLock};
 mod game;
 mod main_menu;
 mod settings;
+mod ui;
 
 use client_state::ClientGamestate;
 use game::{start_game, GameResult};
