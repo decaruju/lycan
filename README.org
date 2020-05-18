@@ -1,0 +1,54 @@
+* Gameplay
+** Éléments importants
+- few against many ou one against all
+- Bad guy est choisi pas au début
+- Single scenario
+** Déroulement d'une partie, plusieurs phases
+  1. Tout le monde spawn dans une pièce aléatoire
+  2. Exploration de la caverne pour explorer et trouver la sortie qui nécessite des clefs
+  3. Tu ne vois que les pièces que tu as explorées, mais tout le monde a la même map
+  3. Il faut un certain nombre de clefs à trouver, dont plusieurs qui sont cursed (qui a l'air normal)
+     - curse qui tourne la map
+     - curse qui téléporte aléatoirement
+     - curse qui efface l'exploration
+     - curse qui reverse les controls
+     - curse qui rend un joueur méchant (est-ce qu'on informe tous les joueurs qu'un bad guy a ete cree)
+  4. Si un joueur prend une clef cursed, il devient le méchant, personne ne le sait
+     4.1 Il peut spawner une fausse sortie
+     4.2 Il a une mini map et peut voir l'exploration de tout le monde
+     4.3 Il n'est pas affecté par les curses de confusion
+  5. Si personne ne prend une clef cursed, il faut simplement trouver la sortie, il faut trouver la sortie 3 fois pour gagner.
+  6. Si les joueurs trouvent la bonne sortie avec les clés, le player cursed a perdu et ne joue plus de la partie ou devient un ghost qui informe les cursed
+  7. Si le player cursed convaint tout le monde de prendre la sortie cursed, il gagne et la partie finie.
+     
+** Maybes
+  - Special roles
+    - Agent of chaos
+    - Forseer
+    - ...
+  - Different themes and tilesets
+    - forest
+    - mansion
+    - space station
+    - cave
+    - temple
+    - ice cave
+
+* TODO
+  - Text input (!!!)
+  - Compiler sur windows
+  - Random spawn
+  - Item spawn
+  - Spawner une sortie
+  - S'assurer que la caverne est connexe
+  - Waiting screen et start syncronisé
+  - Système d'announcements (2 clés ont été trouvées)
+  - Round de jeu (condition de fin et 3 rounds de jeu)
+  - Condition de victoire
+  - Inventory (Clés picked up)
+  - ça gosse être dans le dossier client
+
+* Business
+  5$ pour starter une game, mais join gratuit
+  faire des petits chapeaux (1$ chaque) jew hat
+  gameplay ---- board games
