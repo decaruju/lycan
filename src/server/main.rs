@@ -65,7 +65,10 @@ fn join_game(request: JoinGameRequest, state: State) -> Result<String> {
         .unwrap()
         .join_game(request.game_id, request.player_name)
     {
-        Some(player_id) => data(JoinGameResponse { player_id }),
+        Some(player) => data(JoinGameResponse {
+            player_id: player.0,
+            position: player.1,
+        }),
         None => not_found(),
     }
 }
@@ -81,6 +84,7 @@ fn update(request: UpdateRequest, state: State) -> Result<String> {
         request.player_id.clone(),
         request.position,
         request.new_rooms,
+        request.ready,
     ) {
         Some(gamestate) => data(UpdateResponse::new(gamestate)),
         None => not_found(),

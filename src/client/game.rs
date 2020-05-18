@@ -33,14 +33,10 @@ pub fn start_game(
         {
             let game_id = thread_gamestate.read().unwrap().get_game_id().clone();
             let player_id = thread_gamestate.read().unwrap().get_player_id().clone();
-            let position = thread_gamestate
-                .read()
-                .unwrap()
-                .get_player()
-                .unwrap()
-                .position;
+            let position = thread_gamestate.read().unwrap().get_player().unwrap().position;
+            let ready = thread_gamestate.read().unwrap().get_player().unwrap().ready;
             let new_rooms = thread_gamestate.write().unwrap().get_new_rooms();
-            match http::update(&game_id, &player_id, position, new_rooms) {
+            match http::update(&game_id, &player_id, position, new_rooms, ready) {
                 Ok(data) => {
                     thread_gamestate.write().unwrap().update(data);
                 }
@@ -50,6 +46,29 @@ pub fn start_game(
         thread::sleep(Duration::from_millis(15));
     });
 
+    while !gamestate.read().unwrap().is_started() {
+        while let Some(event) = window.poll_event() {
+            if !window.has_focus() {
+                continue
+            }
+            match event {
+                Event::KeyPressed {code: Key::Return, ..} =>  {
+                    let mut gamestate = gamestate.write().unwrap();
+                    let mut player = gamestate.get_mut_player().unwrap();
+                    player.ready = !player.ready;
+                    println!("{}", player.ready);
+                }
+                _ => {}
+            }
+        }
+        thread::sleep(Duration::from_millis(15));
+    }
+
+    {
+        let mut gamestate = gamestate.write().unwrap();
+        gamestate.add_player_room();
+    }
+
     {
         let view = window.view();
         window.set_view(&View::new(view.center(), view.size()/2.0));
@@ -57,6 +76,9 @@ pub fn start_game(
 
     loop {
         while let Some(event) = window.poll_event() {
+            if !window.has_focus() {
+                continue
+            }
             match event {
                 Event::Closed
                 | Event::KeyPressed {
@@ -76,24 +98,25 @@ pub fn start_game(
         }
 
         let mut movement = (0.0, 0.0);
-
-        if Key::A.is_pressed() {
-            movement.0 -= 3.0;
-        }
-        if Key::D.is_pressed() {
-            movement.0 += 3.0;
-        }
-        if Key::W.is_pressed() {
-            movement.1 -= 3.0;
-        }
-        if Key::S.is_pressed() {
-            movement.1 += 3.0;
-        }
-        if Key::Z.is_pressed() {
-            zoom_in(window);
-        }
-        if Key::X.is_pressed() {
-            zoom_out(window);
+        if window.has_focus() {
+            if Key::A.is_pressed() {
+                movement.0 -= 3.0;
+            }
+            if Key::D.is_pressed() {
+                movement.0 += 3.0;
+            }
+            if Key::W.is_pressed() {
+                movement.1 -= 3.0;
+            }
+            if Key::S.is_pressed() {
+                movement.1 += 3.0;
+            }
+            if Key::Z.is_pressed() {
+                zoom_in(window);
+            }
+            if Key::X.is_pressed() {
+                zoom_out(window);
+            }
         }
 
         {
@@ -169,7 +192,6 @@ pub fn center_view(window: &mut RenderWindow, player: &Player) {
             0
         } as f32,
     );
-    println!("{:?}", direction);
     move_center(window, direction)
 }
 

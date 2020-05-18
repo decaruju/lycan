@@ -499,6 +499,7 @@ dependencies = [
  "hyper",
  "lazy_static",
  "pretty_env_logger",
+ "rand",
  "reqwest",
  "serde",
  "serde_json",

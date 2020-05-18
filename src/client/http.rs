@@ -31,7 +31,7 @@ pub fn new_game() -> ClientResult<String> {
     Ok(response.game_id)
 }
 
-pub fn join_game(game_id: &str) -> ClientResult<String> {
+pub fn join_game(game_id: &str) -> ClientResult<JoinGameResponse> {
     let response: JoinGameResponse = post(
         "http://localhost:1337/join",
         JoinGameRequest {
@@ -40,7 +40,7 @@ pub fn join_game(game_id: &str) -> ClientResult<String> {
         },
     )
     .unwrap();
-    Ok(response.player_id)
+    Ok(response)
 }
 
 pub fn update(
@@ -48,6 +48,7 @@ pub fn update(
     player_id: &str,
     position: (f32, f32),
     new_rooms: Vec<(i32, i32)>,
+    ready: bool,
 ) -> ClientResult<UpdateResponse> {
     let response: UpdateResponse = post(
         "http://localhost:1337/update",
@@ -56,6 +57,7 @@ pub fn update(
             player_id: player_id.to_string(),
             position,
             new_rooms,
+            ready,
         },
     )
     .unwrap();

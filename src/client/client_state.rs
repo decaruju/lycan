@@ -21,6 +21,10 @@ impl ClientGamestate {
         }
     }
 
+    pub fn is_started(&self) -> bool {
+        self.gamestate.started
+    }
+
     pub fn get_player(&self) -> Option<&Player> {
         match &self.player_id {
             Some(player_id) => Some(self.gamestate.players.get(player_id)?),
@@ -35,12 +39,13 @@ impl ClientGamestate {
         }
     }
 
-    pub fn set_player(&mut self, player_id: String) {
+    pub fn set_player(&mut self, player_id: String, position: (f32, f32)) {
         self.gamestate.players.insert(
             player_id.clone(),
             Player {
                 name: String::from("foo"),
-                position: (100.0, 100.0),
+                position,
+                ready: false,
             },
         );
         self.player_id = Some(player_id);
@@ -102,6 +107,11 @@ impl ClientGamestate {
         self.gamestate.remove_doors(position);
     }
 
+    pub fn add_player_room(&mut self) {
+        println!("{:?}", self.player_room_coord());
+        self.add_room(self.player_room_coord());
+    }
+
     pub fn get_new_rooms(&mut self) -> Vec<(i32, i32)> {
         let new_rooms = self.new_rooms.to_vec();
         self.new_rooms = Vec::new();
@@ -134,8 +144,9 @@ impl ClientGamestate {
 
     pub fn update(&mut self, data: UpdateResponse) {
         self.gamestate.map = data.map;
+        self.gamestate.started = data.started;
         for (player_id, player_state) in data.players {
-            if player_id == self.player_id.as_ref().unwrap().clone() {
+            if self.gamestate.started && player_id == self.player_id.as_ref().unwrap().clone() {
                 continue;
             }
             match self.gamestate.players.get_mut(&player_id) {
@@ -148,6 +159,7 @@ impl ClientGamestate {
                         Player {
                             position: player_state.position,
                             name: player_state.name,
+                            ready: false,
                         },
                     );
                 }

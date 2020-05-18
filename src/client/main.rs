@@ -25,13 +25,12 @@ fn main() {
     match http::new_game() {
         Ok(game_id) => {
             println!("{}", game_id);
-            // let game_id = String::from("e150bc60-1682-48b8-812d-786c49d75d90");
+            let game_id = String::from("yes");
             match http::join_game(&game_id) {
-                Ok(player_id) => {
-                    println!("{}", player_id);
+                Ok(response) => {
                     let mut gamestate = gamestate.write().unwrap();
                     gamestate.set_game(game_id);
-                    gamestate.set_player(player_id);
+                    gamestate.set_player(response.player_id, response.position);
                 }
                 Err(err) => println!("{}", err),
             }

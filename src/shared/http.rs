@@ -23,6 +23,7 @@ pub struct JoinGameRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct JoinGameResponse {
     pub player_id: String,
+    pub position: (f32, f32),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -31,17 +32,20 @@ pub struct UpdateRequest {
     pub player_id: String,
     pub position: (f32, f32),
     pub new_rooms: Vec<(i32, i32)>,
+    pub ready: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateResponse {
     pub players: HashMap<String, Player>,
     pub map: Map,
+    pub started: bool,
 }
 
 impl UpdateResponse {
     pub fn new(gamestate: &Gamestate) -> UpdateResponse {
         UpdateResponse {
+            started: gamestate.started,
             players: gamestate.players.clone(),
             map: gamestate.map.clone(),
         }

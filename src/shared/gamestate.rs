@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 pub struct Gamestate {
     pub players: HashMap<String, Player>,
     pub map: Map,
+    pub started: bool,
 }
 
 impl Gamestate {
@@ -112,6 +113,7 @@ impl Default for Map {
 pub struct Player {
     pub name: String,
     pub position: (f32, f32),
+    pub ready: bool,
 }
 
 impl Player {
@@ -132,6 +134,7 @@ impl Default for Gamestate {
         Gamestate {
             players: HashMap::new(),
             map: Map::default(),
+            started: false,
         }
     }
 }
