@@ -35,19 +35,22 @@
     - ice cave
 
 * TODO
-  TODO - Text input (!!!)
+** Technical
   TODO - Compiler sur windows
-  DONE - Random spawn
-  DONE - Item spawn
-  DONE - Spawner une sortie
-  TODO - S'assurer que la caverne est connexe
+  TODO - ça gosse être dans le dossier client
+** Features
+  TODO - Text input (!!!)
+  TODO - S'assurer que la caverne est connexe et intéressante
   TODO - Waiting screen et start syncronisé
   TODO - Système d'announcements (2 clés ont été trouvées)
   TODO - Round de jeu (condition de fin et 3 rounds de jeu)
   TODO - Condition de victoire
   TODO - Inventory (Clés picked up)
-  TODO - ça gosse être dans le dossier client
+  TODO - bloquer la porte si on n'a pas toutes les clefs
+  DONE - Random spawn
   DONE - Cacher les pièces pas explorées
+  DONE - Item spawn
+  DONE - Spawner une sortie
 
 * Business
   5$ pour starter une game, mais join gratuit

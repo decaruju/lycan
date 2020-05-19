@@ -89,7 +89,7 @@ impl ServerState {
         }
         for room_pos in new_rooms {
             if let Some(room) = game.gamestate.add_room(room_pos) {
-                if true || rand::random::<u32>() % 8 == 0 {
+                if rand::random::<u32>() % 8 == 0 {
                     let x = rand::random::<u32>() % 8 + 4;
                     let y = rand::random::<u32>() % 8 + 4;
                     match room.items.get_mut(&x) {

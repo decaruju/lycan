@@ -28,6 +28,12 @@ pub fn start_game(
     gamestate: Arc<RwLock<ClientGamestate>>,
 ) -> GameResult {
     let displayer = Displayer::new();
+
+    {
+        let mut gamestate = gamestate.write().unwrap();
+        gamestate.add_player_room();
+    }
+
     let thread_gamestate = Arc::clone(&gamestate);
     thread::spawn(move || loop {
         {
@@ -62,12 +68,18 @@ pub fn start_game(
                 _ => {}
             }
         }
+        window.clear(Color::BLACK);
+        let mut circle = CircleShape::new(50., 100);
+        circle.set_origin((50., 50.));
+        circle.set_position(Vector2::from((window.size().x as f32/2., window.size().y as f32/2.)));
+        if gamestate.read().unwrap().get_player().unwrap().ready {
+            circle.set_fill_color(Color::GREEN);
+        } else {
+            circle.set_fill_color(Color::RED);
+        }
+        window.draw(&circle);
+        window.display();
         thread::sleep(Duration::from_millis(15));
-    }
-
-    {
-        let mut gamestate = gamestate.write().unwrap();
-        gamestate.add_player_room();
     }
 
     {
