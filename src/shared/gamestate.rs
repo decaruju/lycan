@@ -14,12 +14,13 @@ pub struct Gamestate {
 }
 
 impl Gamestate {
-    pub fn add_room(&mut self, position: (i32, i32)) {
+    pub fn add_room(&mut self, position: (i32, i32)) -> Option<&mut Room> {
         if !self.map.room(position.0, position.1).is_none() {
-            return;
+            return None;
         }
-        self.map.add_room(position, Room::new(position));
-        self.remove_doors(position);
+        self.map.add_room(position, Room::basic(position));
+        // self.remove_doors(position);
+        self.map.mut_room(position.0, position.1)
     }
 
     pub fn remove_doors(&mut self, position: (i32, i32)) {
@@ -64,6 +65,10 @@ impl Map {
         self.rooms.get(&x)?.get(&y)
     }
 
+    pub fn mut_room(&mut self, x: i32, y: i32) -> Option<&mut Room> {
+        self.rooms.get_mut(&x)?.get_mut(&y)
+    }
+
     pub fn room_mut(&mut self, x: i32, y: i32) -> Option<&mut Room> {
         self.rooms.get_mut(&x)?.get_mut(&y)
     }
@@ -103,7 +108,7 @@ impl Default for Map {
     fn default() -> Self {
         let mut rooms = HashMap::new();
         let mut row = HashMap::new();
-        row.insert(0, Room::default());
+        row.insert(0, Room::exit((0, 0)));
         rooms.insert(0, row);
         Map { rooms }
     }

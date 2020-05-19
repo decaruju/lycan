@@ -1,9 +1,10 @@
 use crate::client_state::ClientGamestate;
-use lycan::shared::room::{Room, Tile, TileType, WallType};
+use lycan::shared::room::{Room, Tile, TileType, WallType, Item};
 use lycan::shared::utils::Direction;
 use sfml::{
     graphics::{
         CircleShape, Color, IntRect, RenderTarget, RenderWindow, Shape, Sprite, Texture,
+        RectangleShape,
         Transformable,
     },
     system::SfBox,
@@ -30,7 +31,9 @@ impl Displayer {
     pub fn display(&self, window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamestate>>) {
         window.clear(Color::rgb(60, 44, 41));
         for room in gamestate.read().unwrap().get_rooms() {
-            self.draw_room(window, &room);
+            if gamestate.read().unwrap().explored(room.position) {
+                self.draw_room(window, &room);
+            }
         }
         for (id, player) in gamestate.read().unwrap().get_players() {
             let mut player_sprite = CircleShape::new(4.0, 100);
@@ -47,6 +50,24 @@ impl Displayer {
                 self.draw_tile(window, room, room.tile((i, j)));
             }
         }
+
+        for (x, row) in room.items.iter() {
+            for (y, item) in row.iter() {
+                self.draw_item(window, (*x, *y), &item, room);
+            }
+        }
+    }
+
+    fn draw_item(&self, window: &mut RenderWindow, coord: (u32, u32), item: &Item, room: &Room) {
+        let mut rect = RectangleShape::default();
+        rect.set_position((
+            coord.0 as f32 * 16.0 + room.position.0 as f32 * 16. * 16. + 8.,
+            coord.1 as f32 * 16.0 + room.position.1 as f32 * 16. * 16. + 8.,
+        ));
+        rect.set_size((10., 20.));
+        rect.set_origin((5., 10.));
+        rect.set_fill_color(Color::CYAN);
+        window.draw(&rect);
     }
 
     fn draw_tile(&self, window: &mut RenderWindow, room: &Room, tile: Tile) {
@@ -78,7 +99,8 @@ impl Displayer {
                 WallType::OuterSouthEast => self.sprite(52, 18),
                 WallType::OuterSouthWest => self.sprite(69, 18),
                 _ => return,
-            }
+            },
+            TileType::Exit => self.sprite(86, 103),
             _ => return,
         };
         sprite.set_position((

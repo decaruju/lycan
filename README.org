@@ -38,8 +38,8 @@
   TODO - Text input (!!!)
   TODO - Compiler sur windows
   DONE - Random spawn
-  TODO - Item spawn
-  TODO - Spawner une sortie
+  DONE - Item spawn
+  DONE - Spawner une sortie
   TODO - S'assurer que la caverne est connexe
   TODO - Waiting screen et start syncronisé
   TODO - Système d'announcements (2 clés ont été trouvées)
@@ -47,7 +47,7 @@
   TODO - Condition de victoire
   TODO - Inventory (Clés picked up)
   TODO - ça gosse être dans le dossier client
-  TODO - Cacher les pièces pas explorées
+  DONE - Cacher les pièces pas explorées
 
 * Business
   5$ pour starter une game, mais join gratuit

@@ -8,6 +8,7 @@ use std::fmt::Debug;
 pub enum TileType {
     None,
     Floor,
+    Exit,
     Wall(WallType),
     Door(Direction),
 }
@@ -17,11 +18,18 @@ pub struct Room {
     pub doors: HashMap<String, bool>,
     pub position: (i32, i32),
     pub room_type: RoomType,
+    pub items: HashMap<u32, HashMap<u32, Item>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum RoomType {
     Basic,
+    Exit,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum Item {
+    Key,
 }
 
 impl RoomType {
@@ -31,6 +39,16 @@ impl RoomType {
                 x: position.0,
                 y: position.1,
                 tile_type: BASIC_ROOM
+                    .get(15 - position.1 as usize)
+                    .unwrap()
+                    .get(position.0 as usize)
+                    .unwrap()
+                    .clone(),
+            },
+            RoomType::Exit => Tile {
+                x: position.0,
+                y: position.1,
+                tile_type: EXIT_ROOM
                     .get(15 - position.1 as usize)
                     .unwrap()
                     .get(position.0 as usize)
@@ -64,7 +82,7 @@ pub struct Tile {
 }
 
 impl Room {
-    pub fn new(position: (i32, i32)) -> Self {
+    pub fn new(position: (i32, i32), room_type: RoomType) -> Self {
         let mut doors = HashMap::new();
         doors.insert(Direction::Right.to_string(), true);
         doors.insert(Direction::Up.to_string(), true);
@@ -73,8 +91,17 @@ impl Room {
         Room {
             doors,
             position,
-            room_type: RoomType::Basic,
+            room_type,
+            items: HashMap::new(),
         }
+    }
+
+    pub fn exit(position: (i32, i32)) -> Self {
+        Room::new(position, RoomType::Exit)
+    }
+
+    pub fn basic(position: (i32, i32)) -> Self {
+        Room::new(position, RoomType::Basic)
     }
 
     pub fn tile(&self, tile: (i32, i32)) -> Tile {
@@ -95,11 +122,18 @@ impl Room {
             _ => false,
         }
     }
+
+    pub fn is_exit(&self, position: (i32, i32)) -> bool {
+        match self.tile(position).tile_type {
+            TileType::Exit => true,
+            _ => false,
+        }
+    }
 }
 
 impl Default for Room {
     fn default() -> Self {
-        Room::new((0, 0))
+        Room::new((0, 0), RoomType::Basic)
     }
 }
 
@@ -258,6 +292,297 @@ const BASIC_ROOM: [[TileType; ROOM_SIZE]; ROOM_SIZE] = [
         TileType::Floor,
         TileType::Floor,
         TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Door(Direction::Right),
+    ],
+    [
+        TileType::Door(Direction::Left),
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Door(Direction::Right),
+    ],
+    [
+        TileType::Wall(WallType::North),
+        TileType::Wall(WallType::OuterNorthWest),
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Wall(WallType::OuterNorthEast),
+        TileType::Wall(WallType::North),
+    ],
+    [
+        TileType::None,
+        TileType::Wall(WallType::West),
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Wall(WallType::East),
+        TileType::None,
+    ],
+    [
+        TileType::None,
+        TileType::Wall(WallType::West),
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Wall(WallType::East),
+        TileType::None,
+    ],
+    [
+        TileType::None,
+        TileType::Wall(WallType::West),
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Wall(WallType::East),
+        TileType::None,
+    ],
+    [
+        TileType::None,
+        TileType::Wall(WallType::InnerNorthWest),
+        TileType::Wall(WallType::North),
+        TileType::Wall(WallType::North),
+        TileType::Wall(WallType::North),
+        TileType::Wall(WallType::OuterNorthWest),
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Wall(WallType::OuterNorthEast),
+        TileType::Wall(WallType::North),
+        TileType::Wall(WallType::North),
+        TileType::Wall(WallType::North),
+        TileType::Wall(WallType::InnerNorthEast),
+        TileType::None,
+    ],
+    [
+        TileType::None,
+        TileType::None,
+        TileType::None,
+        TileType::None,
+        TileType::None,
+        TileType::Wall(WallType::West),
+        TileType::Door(Direction::Down),
+        TileType::Door(Direction::Down),
+        TileType::Door(Direction::Down),
+        TileType::Door(Direction::Down),
+        TileType::Wall(WallType::East),
+        TileType::None,
+        TileType::None,
+        TileType::None,
+        TileType::None,
+        TileType::None,
+    ],
+];
+
+const EXIT_ROOM: [[TileType; ROOM_SIZE]; ROOM_SIZE] = [
+    [
+        TileType::None,
+        TileType::None,
+        TileType::None,
+        TileType::None,
+        TileType::None,
+        TileType::Wall(WallType::West),
+        TileType::Door(Direction::Up),
+        TileType::Door(Direction::Up),
+        TileType::Door(Direction::Up),
+        TileType::Door(Direction::Up),
+        TileType::Wall(WallType::East),
+        TileType::None,
+        TileType::None,
+        TileType::None,
+        TileType::None,
+        TileType::None,
+    ],
+    [
+        TileType::None,
+        TileType::Wall(WallType::InnerSouthWest),
+        TileType::Wall(WallType::South),
+        TileType::Wall(WallType::South),
+        TileType::Wall(WallType::South),
+        TileType::Wall(WallType::OuterSouthWest),
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Wall(WallType::OuterSouthEast),
+        TileType::Wall(WallType::South),
+        TileType::Wall(WallType::South),
+        TileType::Wall(WallType::South),
+        TileType::Wall(WallType::InnerSouthEast),
+        TileType::None,
+    ],
+    [
+        TileType::None,
+        TileType::Wall(WallType::West),
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Wall(WallType::East),
+        TileType::None,
+    ],
+    [
+        TileType::None,
+        TileType::Wall(WallType::West),
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Wall(WallType::East),
+        TileType::None,
+    ],
+    [
+        TileType::None,
+        TileType::Wall(WallType::West),
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Wall(WallType::East),
+        TileType::None,
+    ],
+    [
+        TileType::Wall(WallType::South),
+        TileType::Wall(WallType::OuterSouthWest),
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Wall(WallType::OuterSouthEast),
+        TileType::Wall(WallType::South),
+    ],
+    [
+        TileType::Door(Direction::Left),
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Door(Direction::Right),
+    ],
+    [
+        TileType::Door(Direction::Left),
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Exit,
+        TileType::Exit,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Door(Direction::Right),
+    ],
+    [
+        TileType::Door(Direction::Left),
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Floor,
+        TileType::Exit,
+        TileType::Exit,
         TileType::Floor,
         TileType::Floor,
         TileType::Floor,

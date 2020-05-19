@@ -32,6 +32,7 @@ pub struct UpdateRequest {
     pub player_id: String,
     pub position: (f32, f32),
     pub new_rooms: Vec<(i32, i32)>,
+    pub cleared_rooms: Vec<(i32, i32)>,
     pub ready: bool,
 }
 

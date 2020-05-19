@@ -9,7 +9,7 @@ use sfml::{
         CircleShape, Color, IntRect, RectangleShape, RenderTarget, RenderWindow, Shape, Sprite,
         Texture, Transformable, View,
     },
-    system::SfBox,
+    system::{SfBox, Vector2},
     window::{Event, Key},
 };
 use std::{
@@ -36,7 +36,8 @@ pub fn start_game(
             let position = thread_gamestate.read().unwrap().get_player().unwrap().position;
             let ready = thread_gamestate.read().unwrap().get_player().unwrap().ready;
             let new_rooms = thread_gamestate.write().unwrap().get_new_rooms();
-            match http::update(&game_id, &player_id, position, new_rooms, ready) {
+            let cleared_rooms = thread_gamestate.write().unwrap().get_cleared_rooms();
+            match http::update(&game_id, &player_id, position, new_rooms, cleared_rooms, ready) {
                 Ok(data) => {
                     thread_gamestate.write().unwrap().update(data);
                 }
@@ -70,8 +71,10 @@ pub fn start_game(
     }
 
     {
+        let gamestate = gamestate.read().unwrap();
+        let position = gamestate.player_position();
         let view = window.view();
-        window.set_view(&View::new(view.center(), view.size()/2.0));
+        window.set_view(&View::new(Vector2::from(position), view.size()/2.0));
     }
 
     loop {
@@ -142,6 +145,10 @@ pub fn start_game(
             } else if gamestate.player_in_wall() {
                 let mut player = gamestate.get_mut_player().unwrap();
                 player.move_player((-movement.0, -movement.1))
+            } else if gamestate.player_in_exit() {
+                panic!("YOU WON");
+            } else if gamestate.player_on_item() {
+                gamestate.remove_item();
             }
             let player = gamestate.get_player().unwrap();
             center_view(window, player);

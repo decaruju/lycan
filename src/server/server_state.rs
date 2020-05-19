@@ -4,6 +4,7 @@ use uuid::Uuid;
 use rand;
 
 use lycan::shared::gamestate::{Gamestate, Player};
+use lycan::shared::room::{Item};
 
 #[derive(Debug)]
 pub struct ServerGamestate {
@@ -78,6 +79,7 @@ impl ServerState {
         player_id: String,
         position: (f32, f32),
         new_rooms: Vec<(i32, i32)>,
+        cleared_rooms: Vec<(i32, i32)>,
         ready: bool,
     ) -> Option<&Gamestate> {
         let game = self.games.get_mut(&game_id)?;
@@ -86,7 +88,26 @@ impl ServerState {
            game.gamestate.started = true;
         }
         for room_pos in new_rooms {
-            game.gamestate.add_room(room_pos);
+            if let Some(room) = game.gamestate.add_room(room_pos) {
+                if true || rand::random::<u32>() % 8 == 0 {
+                    let x = rand::random::<u32>() % 8 + 4;
+                    let y = rand::random::<u32>() % 8 + 4;
+                    match room.items.get_mut(&x) {
+                        Some(row) => {
+                            row.insert(y, Item::Key);
+                        }
+                        None => {
+                            let mut row = HashMap::new();
+                            row.insert(y, Item::Key);
+                            room.items.insert(x, row);
+                        }
+                    }
+                    println!("item at {}, {}", x, y);
+                }
+            }
+        }
+        for room_pos in cleared_rooms {
+            game.gamestate.map.mut_room(room_pos.0, room_pos.1)?.items.clear()
         }
         Some(&game.gamestate)
     }

@@ -84,9 +84,12 @@ fn update(request: UpdateRequest, state: State) -> Result<String> {
         request.player_id.clone(),
         request.position,
         request.new_rooms,
+        request.cleared_rooms,
         request.ready,
     ) {
-        Some(gamestate) => data(UpdateResponse::new(gamestate)),
+        Some(gamestate) => {
+            data(UpdateResponse::new(gamestate))
+        },
         None => not_found(),
     }
 }

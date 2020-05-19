@@ -9,6 +9,8 @@ pub struct ClientGamestate {
     pub player_id: Option<String>,
     pub game_id: Option<String>,
     pub new_rooms: Vec<(i32, i32)>,
+    pub cleared_rooms: Vec<(i32, i32)>,
+    pub explored_rooms: HashMap<(i32, i32), bool>,
 }
 
 impl ClientGamestate {
@@ -18,11 +20,20 @@ impl ClientGamestate {
             new_rooms: Vec::new(),
             player_id: None,
             game_id: None,
+            explored_rooms: HashMap::new(),
+            cleared_rooms: Vec::new(),
         }
     }
 
     pub fn is_started(&self) -> bool {
         self.gamestate.started
+    }
+
+    pub fn explored(&self, position: (i32, i32)) -> bool {
+        match self.explored_rooms.get(&position) {
+            Some(explored) => *explored,
+            None => false,
+        }
     }
 
     pub fn get_player(&self) -> Option<&Player> {
@@ -86,6 +97,14 @@ impl ClientGamestate {
             .unwrap()
     }
 
+    pub fn mut_player_room(&mut self) -> &mut Room {
+        let player_room_coord = self.player_room_coord();
+        self.gamestate
+            .map
+            .mut_room(player_room_coord.0, player_room_coord.1)
+            .unwrap()
+    }
+
     pub fn player_in_wall(&self) -> bool {
         let tile = self.player_tile();
         let room = self.player_room();
@@ -98,7 +117,31 @@ impl ClientGamestate {
         room.is_door(tile)
     }
 
+    pub fn player_in_exit(&self) -> bool {
+        let room = self.player_room();
+        let tile = self.player_tile();
+        room.is_exit(tile)
+    }
+
+    pub fn player_on_item(&self) -> bool {
+        let room = self.player_room();
+        let tile = self.player_tile();
+        if let Some(row) = room.items.get(&(tile.0 as u32)) {
+            if let Some(item) = row.get(&(tile.1 as u32)) {
+                return true
+            }
+        }
+        false
+    }
+
+    pub fn remove_item(&mut self) {
+        let mut room = self.mut_player_room();
+        room.items.clear();
+        self.cleared_rooms.push(self.player_room_coord());
+    }
+
     pub fn add_room(&mut self, position: (i32, i32)) {
+        *self.explored_rooms.entry(position.clone()).or_insert(true) = true;
         if !self.gamestate.map.room(position.0, position.1).is_none() {
             return;
         }
@@ -116,6 +159,12 @@ impl ClientGamestate {
         let new_rooms = self.new_rooms.to_vec();
         self.new_rooms = Vec::new();
         new_rooms
+    }
+
+    pub fn get_cleared_rooms(&mut self) -> Vec<(i32, i32)> {
+        let cleared_rooms = self.cleared_rooms.to_vec();
+        self.cleared_rooms = Vec::new();
+        cleared_rooms
     }
 
     pub fn get_game_id(&self) -> String {

@@ -48,6 +48,7 @@ pub fn update(
     player_id: &str,
     position: (f32, f32),
     new_rooms: Vec<(i32, i32)>,
+    cleared_rooms: Vec<(i32, i32)>,
     ready: bool,
 ) -> ClientResult<UpdateResponse> {
     let response: UpdateResponse = post(
@@ -57,6 +58,7 @@ pub fn update(
             player_id: player_id.to_string(),
             position,
             new_rooms,
+            cleared_rooms,
             ready,
         },
     )
