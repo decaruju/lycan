@@ -1,6 +1,6 @@
 use lycan::shared::gamestate::{Gamestate, Player};
 use lycan::shared::http::UpdateResponse;
-use lycan::shared::room::Room;
+use lycan::shared::room::{Room, Item};
 use lycan::shared::utils::Direction;
 use std::collections::HashMap;
 
@@ -126,17 +126,24 @@ impl ClientGamestate {
     pub fn player_on_item(&self) -> bool {
         let room = self.player_room();
         let tile = self.player_tile();
-        if let Some(row) = room.items.get(&(tile.0 as u32)) {
-            if let Some(item) = row.get(&(tile.1 as u32)) {
-                return true
-            }
+        if let Some(item) = &room.item {
+            let pos = item.1;
+            pos.0 as i32 == tile.0 && pos.1 as i32 == tile.1
+        } else {
+            false
         }
-        false
     }
 
     pub fn remove_item(&mut self) {
         let mut room = self.mut_player_room();
-        room.items.clear();
+        match room.item {
+            Some((Item::Key, _)) => {
+            },
+            Some((Item::Spin, _)) => {
+            },
+            None => {}
+        }
+        room.item = None;
         self.cleared_rooms.push(self.player_room_coord());
     }
 
@@ -194,6 +201,7 @@ impl ClientGamestate {
     pub fn update(&mut self, data: UpdateResponse) {
         self.gamestate.map = data.map;
         self.gamestate.started = data.started;
+        self.gamestate.keys = data.keys;
         for (player_id, player_state) in data.players {
             if self.gamestate.started && player_id == self.player_id.as_ref().unwrap().clone() {
                 continue;

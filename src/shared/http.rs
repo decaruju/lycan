@@ -41,6 +41,7 @@ pub struct UpdateResponse {
     pub players: HashMap<String, Player>,
     pub map: Map,
     pub started: bool,
+    pub keys: u32,
 }
 
 impl UpdateResponse {
@@ -49,6 +50,7 @@ impl UpdateResponse {
             started: gamestate.started,
             players: gamestate.players.clone(),
             map: gamestate.map.clone(),
+            keys: gamestate.keys,
         }
     }
 }

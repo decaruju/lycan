@@ -36,8 +36,8 @@
 
 * TODO
 ** Technical
-  TODO - Compiler sur windows
   TODO - ça gosse être dans le dossier client
+  TODO - Compiler sur windows
 ** Features
   TODO - Text input (!!!)
   TODO - S'assurer que la caverne est connexe et intéressante

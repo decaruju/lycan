@@ -18,7 +18,7 @@ pub struct Room {
     pub doors: HashMap<String, bool>,
     pub position: (i32, i32),
     pub room_type: RoomType,
-    pub items: HashMap<u32, HashMap<u32, Item>>,
+    pub item: Option<(Item, (u32, u32))>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -30,6 +30,7 @@ pub enum RoomType {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum Item {
     Key,
+    Spin,
 }
 
 impl RoomType {
@@ -92,7 +93,7 @@ impl Room {
             doors,
             position,
             room_type,
-            items: HashMap::new(),
+            item: None,
         }
     }
 

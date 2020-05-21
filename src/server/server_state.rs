@@ -88,26 +88,26 @@ impl ServerState {
            game.gamestate.started = true;
         }
         for room_pos in new_rooms {
+            let keys = game.gamestate.keys;
             if let Some(room) = game.gamestate.add_room(room_pos) {
-                if rand::random::<u32>() % 8 == 0 {
+                if keys < 8 && rand::random::<u32>() % 8 == 0 {
                     let x = rand::random::<u32>() % 8 + 4;
                     let y = rand::random::<u32>() % 8 + 4;
-                    match room.items.get_mut(&x) {
-                        Some(row) => {
-                            row.insert(y, Item::Key);
-                        }
-                        None => {
-                            let mut row = HashMap::new();
-                            row.insert(y, Item::Key);
-                            room.items.insert(x, row);
-                        }
-                    }
+                    room.item = Some((Item::Key, (x, y)));
                     println!("item at {}, {}", x, y);
                 }
             }
         }
         for room_pos in cleared_rooms {
-            game.gamestate.map.mut_room(room_pos.0, room_pos.1)?.items.clear()
+            match game.gamestate.map.room(room_pos.0, room_pos.1)?.item {
+                Some((Item::Key, _)) => {
+                    game.gamestate.keys += 1;
+                },
+                Some(_) => {
+                },
+                None => {}
+            }
+            game.gamestate.map.mut_room(room_pos.0, room_pos.1)?.item = None;
         }
         Some(&game.gamestate)
     }

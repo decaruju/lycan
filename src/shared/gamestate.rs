@@ -11,6 +11,7 @@ pub struct Gamestate {
     pub players: HashMap<String, Player>,
     pub map: Map,
     pub started: bool,
+    pub keys: u32,
 }
 
 impl Gamestate {
@@ -140,6 +141,7 @@ impl Default for Gamestate {
             players: HashMap::new(),
             map: Map::default(),
             started: false,
+            keys: 0,
         }
     }
 }

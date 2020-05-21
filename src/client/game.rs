@@ -27,7 +27,6 @@ pub fn start_game(
     window: &mut RenderWindow,
     gamestate: Arc<RwLock<ClientGamestate>>,
 ) -> GameResult {
-    let displayer = Displayer::new();
 
     {
         let mut gamestate = gamestate.write().unwrap();
@@ -52,6 +51,8 @@ pub fn start_game(
         }
         thread::sleep(Duration::from_millis(15));
     });
+
+    let mut displayer = Displayer::new(window.size());
 
     while !gamestate.read().unwrap().is_started() {
         while let Some(event) = window.poll_event() {
@@ -85,8 +86,7 @@ pub fn start_game(
     {
         let gamestate = gamestate.read().unwrap();
         let position = gamestate.player_position();
-        let view = window.view();
-        window.set_view(&View::new(Vector2::from(position), view.size()/2.0));
+        displayer.set_center(position);
     }
 
     loop {
@@ -127,10 +127,10 @@ pub fn start_game(
                 movement.1 += 3.0;
             }
             if Key::Z.is_pressed() {
-                zoom_in(window);
+                displayer.zoom_in();
             }
             if Key::X.is_pressed() {
-                zoom_out(window);
+                displayer.zoom_out();
             }
         }
 
@@ -159,67 +159,18 @@ pub fn start_game(
                 player.move_player((-movement.0, -movement.1))
             } else if gamestate.player_in_exit() {
                 panic!("YOU WON");
-            } else if gamestate.player_on_item() {
+            }
+            if gamestate.player_on_item() {
                 gamestate.remove_item();
             }
             let player = gamestate.get_player().unwrap();
-            center_view(window, player);
+            displayer.center_view(window, player);
             // println!("player{:?}, in_wall{:?}, in_door{:?}, room{:?}, tile{:?}", gamestate.player_position(), gamestate.player_in_wall(), gamestate.player_in_wall(), gamestate.player_room_coord(), gamestate.player_tile());
         }
 
         displayer.display(window, Arc::clone(&gamestate));
         thread::sleep(Duration::from_millis(15));
     }
-}
-
-pub fn zoom_out(window: &mut RenderWindow) {
-    let view = window.view();
-    let mut new_view = View::new(view.center(), view.size());
-    new_view.set_size(view.size() * 0.99);
-    window.set_view(&new_view);
-}
-
-pub fn zoom_in(window: &mut RenderWindow) {
-    let view = window.view();
-    let mut new_view = View::new(view.center(), view.size());
-    new_view.set_size(view.size() / 0.99);
-    window.set_view(&new_view);
-}
-
-pub fn center_view(window: &mut RenderWindow, player: &Player) {
-    let player_position = window.map_coords_to_pixel_current_view(sfml::system::Vector2 {
-        x: player.position.0,
-        y: player.position.1,
-    });
-    let center_x = (window.size().x / 2) as i32;
-    let center_y = (window.size().y / 2) as i32;
-    let buffer_x = (window.size().x/4) as i32;
-    let buffer_y = (window.size().y/4) as i32;
-    let direction = (
-        if (player_position.x - center_x > buffer_x) {
-            std::cmp::min(player_position.x - center_x - buffer_x, 3)
-        } else if (center_x - player_position.x > buffer_x) {
-            std::cmp::max(player_position.x - center_x + buffer_x, -3)
-        } else {
-            0
-        } as f32,
-        if (player_position.y - center_y > buffer_y) {
-            std::cmp::min(player_position.y - center_y - buffer_y, 3)
-        } else if (center_y - player_position.y > buffer_y) {
-            std::cmp::max(player_position.y - center_y + buffer_y, -3)
-        } else {
-            0
-        } as f32,
-    );
-    move_center(window, direction)
-}
-
-fn move_center(window: &mut RenderWindow, direction: (f32, f32)) {
-    let view = window.view();
-    let mut new_view = View::new(view.center(), view.size());
-    let old_center = view.center();
-    new_view.set_center((view.center().x + direction.0, view.center().y + direction.1));
-    window.set_view(&new_view);
 }
 
 pub fn draw(
