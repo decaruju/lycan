@@ -101,6 +101,7 @@ impl Displayer {
 
     pub fn display(&mut self, window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamestate>>) {
         window.clear(Color::rgb(60, 44, 41));
+        self.game_view.set_rotation(gamestate.read().unwrap().rotation);
         window.set_view(&self.game_view);
         for room in gamestate.read().unwrap().get_rooms() {
             if gamestate.read().unwrap().explored(room.position) {
@@ -212,13 +213,4 @@ impl Displayer {
         ));
         window.draw(&sprite);
     }
-}
-
-fn ball<'a>(position: (f32, f32)) -> CircleShape<'a> {
-    let mut ball = CircleShape::default();
-    ball.set_radius(20.);
-    ball.set_origin((20., 20.));
-    ball.set_fill_color(Color::YELLOW);
-    ball.set_position(position);
-    ball
 }

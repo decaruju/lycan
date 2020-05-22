@@ -90,10 +90,15 @@ impl ServerState {
         for room_pos in new_rooms {
             let keys = game.gamestate.keys;
             if let Some(room) = game.gamestate.add_room(room_pos) {
-                if keys < 8 && rand::random::<u32>() % 8 == 0 {
+                if keys < 8 && rand::random::<u32>() % 2 == 0 {
                     let x = rand::random::<u32>() % 8 + 4;
                     let y = rand::random::<u32>() % 8 + 4;
-                    room.item = Some((Item::Key, (x, y)));
+                    room.item = Some((match rand::random::<u32>() % 4 {
+                        0 => Item::Clear,
+                        1 => Item::Spin,
+                        2 => Item::Bad,
+                        _ => Item::Key,
+                    }, (x, y)));
                     println!("item at {}, {}", x, y);
                 }
             }

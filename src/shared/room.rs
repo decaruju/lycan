@@ -30,7 +30,9 @@ pub enum RoomType {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum Item {
     Key,
+    Clear,
     Spin,
+    Bad,
 }
 
 impl RoomType {

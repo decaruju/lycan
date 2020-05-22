@@ -45,8 +45,12 @@
   TODO - Système d'announcements (2 clés ont été trouvées)
   TODO - Round de jeu (condition de fin et 3 rounds de jeu)
   TODO - Condition de victoire
+  TODO - Implémenter les curses
+  TODO - Rendre les curses unique par round
   TODO - Inventory (Clés picked up)
   TODO - bloquer la porte si on n'a pas toutes les clefs
+  TODO - ne pas panic à la fin de la game
+  TODO - Limiter la taille de la map
   DONE - Random spawn
   DONE - Cacher les pièces pas explorées
   DONE - Item spawn

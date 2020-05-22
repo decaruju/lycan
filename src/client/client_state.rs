@@ -11,6 +11,7 @@ pub struct ClientGamestate {
     pub new_rooms: Vec<(i32, i32)>,
     pub cleared_rooms: Vec<(i32, i32)>,
     pub explored_rooms: HashMap<(i32, i32), bool>,
+    pub rotation: f32,
 }
 
 impl ClientGamestate {
@@ -22,6 +23,7 @@ impl ClientGamestate {
             game_id: None,
             explored_rooms: HashMap::new(),
             cleared_rooms: Vec::new(),
+            rotation: 0.,
         }
     }
 
@@ -136,14 +138,22 @@ impl ClientGamestate {
 
     pub fn remove_item(&mut self) {
         let mut room = self.mut_player_room();
-        match room.item {
-            Some((Item::Key, _)) => {
-            },
-            Some((Item::Spin, _)) => {
-            },
-            None => {}
-        }
+        let item = room.item.clone();
         room.item = None;
+        if let Some((item, _)) = item {
+            match item {
+                Item::Bad => {
+                },
+                Item::Key => {
+                },
+                Item::Spin => {
+                    self.rotation += 30.;
+                },
+                Item::Clear => {
+                    self.explored_rooms.clear();
+                },
+            }
+        }
         self.cleared_rooms.push(self.player_room_coord());
     }
 
