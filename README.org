@@ -39,18 +39,35 @@
   TODO - ça gosse être dans le dossier client
   TODO - Compiler sur windows
 ** Features
+  TODO - Join Game button
+  TODO - New Game button
+  TODO - Quit button
+  TODO - Player_name input screen
+  TODO - Confirm name button
   TODO - Text input (!!!)
+  TODO - Input de game_id
+  TODO - Input de player_name
+  TODO - Display player_name in game
+  TODO - Displayer game_id in waiting screen
+  TODO - Better game_id
+  TODO - Rules in waiting screen
+  TODO - 5 4 3 2 1 before game start
   TODO - S'assurer que la caverne est connexe et intéressante
-  TODO - Waiting screen et start syncronisé
   TODO - Système d'announcements (2 clés ont été trouvées)
   TODO - Round de jeu (condition de fin et 3 rounds de jeu)
   TODO - Condition de victoire
-  TODO - Implémenter les curses
+  TODO - Implémenter le spin curse
+  TODO - Implémenter le bad curse
+  TODO - Trouver d'autres curses
   TODO - Rendre les curses unique par round
-  TODO - Inventory (Clés picked up)
+  TODO - Pause Game
   TODO - bloquer la porte si on n'a pas toutes les clefs
   TODO - ne pas panic à la fin de la game
   TODO - Limiter la taille de la map
+
+  DONE - Implémenter le clear curse
+  DONE - Inventory (Clés picked up)
+  DONE - Waiting screen et start syncronisé
   DONE - Random spawn
   DONE - Cacher les pièces pas explorées
   DONE - Item spawn
