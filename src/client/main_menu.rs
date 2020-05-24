@@ -53,17 +53,7 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
                     _ => {}
                 },
                 Event::TextEntered { unicode } => {
-                    if unicode == '\u{8}' {
-                        joingame_field.text.pop();
-                        joingame_field
-                            .title_text
-                            .set_string(joingame_field.text.as_str());
-                    } else {
-                        joingame_field.text.push(unicode);
-                        joingame_field
-                            .title_text
-                            .set_string(joingame_field.text.as_str());
-                    }
+                    joingame_field.add_unicode_char(unicode);
                 }
                 _ => {}
             }

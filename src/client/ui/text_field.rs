@@ -40,6 +40,15 @@ impl<'a> TextField<'a> {
     pub fn get_bounds(&mut self) -> FloatRect {
         self.background.global_bounds()
     }
+    pub fn add_unicode_char(&mut self, unicode: char) {
+        if unicode == '\u{8}' {
+            self.text.pop();
+            self.title_text.set_string(self.text.as_str());
+        } else {
+            self.text.push(unicode);
+            self.title_text.set_string(self.text.as_str());
+        }
+    }
 }
 
 impl<'a> Drawable for TextField<'a> {
