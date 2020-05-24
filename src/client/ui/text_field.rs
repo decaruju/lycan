@@ -7,38 +7,34 @@ use sfml::{
 };
 
 pub struct TextField<'a> {
+    pub text: String,
     pub title_text: Text<'a>,
     pub background: RectangleShape<'a>,
-    position: Vector2<f32>,
-    size: Vector2<f32>,
 }
 
 impl<'a> TextField<'a> {
-    pub fn new(size: (f32, f32), title: String, font: &'a SfBox<Font>) -> Self {
+    pub fn new(size: (f32, f32), font: &'a SfBox<Font>) -> Self {
         let size = Vector2::from(size);
-        let position = Vector2::from((0., 0.));
         let mut background = RectangleShape::with_size(size);
         let center = (size.x / 2., size.y / 2.);
         background.set_origin(center);
         // TODO only work if run from client folder
         let mut title_text = Text::default();
-        title_text.set_string(title.as_str());
         title_text.set_fill_color(Color::RED);
         title_text.set_font(&font);
-        let text_size = title_text.local_bounds();
-        let text_center = (text_size.width / 2., text_size.height / 2.);
-        title_text.set_origin(text_center);
-        println!("{:?}", text_center);
         Self {
+            text: String::new(),
             title_text: title_text,
-            position: position,
             background: background,
-            size: size,
         }
     }
 
     pub fn set_position(&mut self, position: (f32, f32)) {
         self.background.set_position(position);
+
+        let text_size = self.title_text.local_bounds();
+        let text_center = (text_size.width / 2., text_size.height / 2.);
+        self.title_text.set_origin(text_center);
         self.title_text.set_position(position);
     }
     pub fn get_bounds(&mut self) -> FloatRect {

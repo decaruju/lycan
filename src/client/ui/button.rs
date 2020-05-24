@@ -9,14 +9,11 @@ use sfml::{
 pub struct MenuButton<'a> {
     pub title_text: Text<'a>,
     pub background: RectangleShape<'a>,
-    position: Vector2<f32>,
-    size: Vector2<f32>,
 }
 
 impl<'a> MenuButton<'a> {
     pub fn new(size: (f32, f32), title: String, font: &'a SfBox<Font>) -> Self {
         let size = Vector2::from(size);
-        let position = Vector2::from((0., 0.));
         let mut background = RectangleShape::with_size(size);
         let center = (size.x / 2., size.y / 2.);
         background.set_origin(center);
@@ -31,9 +28,7 @@ impl<'a> MenuButton<'a> {
         println!("{:?}", text_center);
         Self {
             title_text: title_text,
-            position: position,
             background: background,
-            size: size,
         }
     }
 

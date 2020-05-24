@@ -7,7 +7,7 @@ use sfml::{
     window::{mouse, ContextSettings, Event, Key, Style},
 };
 
-use crate::ui::button;
+use crate::ui::{button, text_field};
 use crate::Settings;
 
 pub enum MenuChoice {
@@ -20,8 +20,7 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
 
     let mut startgame_button =
         button::MenuButton::new((300., 70.), String::from("start the game"), &font);
-    let mut joingame_field =
-        button::MenuButton::new((300., 70.), String::from("join a game"), &font);
+    let mut joingame_field = text_field::TextField::new((300., 70.), &font);
 
     let size = window.size();
     let mut center = window
@@ -46,13 +45,26 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
                 }
                 Event::MouseButtonPressed { button, x, y } => match button {
                     mouse::Button::Left => {
+                        println!("{} - {}", x, y);
                         if startgame_button.get_bounds().contains2(x as f32, y as f32) {
                             return MenuChoice::StartGame;
                         }
                     }
                     _ => {}
                 },
-                Event::TextEntered { unicode } => println!("{:?}", unicode),
+                Event::TextEntered { unicode } => {
+                    if unicode == '\u{8}' {
+                        joingame_field.text.pop();
+                        joingame_field
+                            .title_text
+                            .set_string(joingame_field.text.as_str());
+                    } else {
+                        joingame_field.text.push(unicode);
+                        joingame_field
+                            .title_text
+                            .set_string(joingame_field.text.as_str());
+                    }
+                }
                 _ => {}
             }
         }
