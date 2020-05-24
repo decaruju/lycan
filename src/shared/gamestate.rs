@@ -12,9 +12,29 @@ pub struct Gamestate {
     pub map: Map,
     pub started: bool,
     pub keys: u32,
+    pub messages: Vec<Message>,
+    pub round: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Message {
+    pub text: String,
+}
+
+impl Message {
+    pub fn new(text: String) -> Message {
+        Message{text}
+    }
 }
 
 impl Gamestate {
+    pub fn next_round(&mut self) {
+        self.map = Map::default();
+        self.keys = 0;
+        self.round += 1;
+        self.messages = vec![];
+    }
+
     pub fn add_room(&mut self, position: (i32, i32)) -> Option<&mut Room> {
         if !self.map.room(position.0, position.1).is_none() {
             return None;
@@ -142,6 +162,8 @@ impl Default for Gamestate {
             map: Map::default(),
             started: false,
             keys: 0,
+            messages: vec![],
+            round: 1,
         }
     }
 }

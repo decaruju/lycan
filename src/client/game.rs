@@ -42,7 +42,8 @@ pub fn start_game(
             let ready = thread_gamestate.read().unwrap().get_player().unwrap().ready;
             let new_rooms = thread_gamestate.write().unwrap().get_new_rooms();
             let cleared_rooms = thread_gamestate.write().unwrap().get_cleared_rooms();
-            match http::update(&game_id, &player_id, position, new_rooms, cleared_rooms, ready) {
+            let end = thread_gamestate.write().unwrap().end;
+            match http::update(&game_id, &player_id, position, new_rooms, cleared_rooms, ready, end) {
                 Ok(data) => {
                     thread_gamestate.write().unwrap().update(data);
                 }
@@ -141,27 +142,33 @@ pub fn start_game(
                 let mut player = gamestate.get_mut_player().unwrap();
                 player.move_player(movement);
             }
-            if gamestate.player_in_door() {
-                let player_room = gamestate.player_room();
-                let position = player_room.position;
-                if let TileType::Door(direction) =
-                    player_room.tile(gamestate.player_tile()).tile_type
-                {
-                    gamestate.add_room(match direction {
-                        Direction::Up => (position.0, position.1 + 1),
-                        Direction::Down => (position.0, position.1 - 1),
-                        Direction::Left => (position.0 - 1, position.1),
-                        Direction::Right => (position.0 + 1, position.1),
-                    });
+            if let Some(player_room) = gamestate.player_room() {
+                if gamestate.player_in_door() {
+                    let position = player_room.position;
+                    if let TileType::Door(direction) =
+                        player_room.tile(gamestate.player_tile()).tile_type
+                    {
+                        gamestate.add_room(match direction {
+                            Direction::Up => (position.0, position.1 + 1),
+                            Direction::Down => (position.0, position.1 - 1),
+                            Direction::Left => (position.0 - 1, position.1),
+                            Direction::Right => (position.0 + 1, position.1),
+                        });
+                    }
+                } else if gamestate.player_in_wall() {
+                    let mut player = gamestate.get_mut_player().unwrap();
+                    player.move_player((-movement.0, -movement.1))
+                } else if gamestate.player_in_exit() {
+                    if gamestate.gamestate.keys == 8 {
+                        gamestate.end = true;
+                    } else {
+                        let mut player = gamestate.get_mut_player().unwrap();
+                        player.move_player((-movement.0, -movement.1))
+                    }
                 }
-            } else if gamestate.player_in_wall() {
-                let mut player = gamestate.get_mut_player().unwrap();
-                player.move_player((-movement.0, -movement.1))
-            } else if gamestate.player_in_exit() {
-                panic!("YOU WON");
-            }
-            if gamestate.player_on_item() {
-                gamestate.remove_item();
+                if gamestate.player_on_item() {
+                    gamestate.remove_item();
+                }
             }
             let player = gamestate.get_player().unwrap();
             displayer.center_view(window, player);

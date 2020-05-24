@@ -4,6 +4,8 @@ use lycan::shared::room::{Room, Tile, TileType, WallType, Item};
 use lycan::shared::utils::Direction;
 use sfml::{
     graphics::{
+        Text,
+        Font,
         CircleShape, Color, IntRect, RenderTarget, RenderWindow, Shape, Sprite, Texture,
         RectangleShape,
         Transformable,
@@ -16,6 +18,7 @@ use std::rc::Rc;
 
 pub struct Displayer {
     texture: SfBox<Texture>,
+    font: SfBox<Font>,
     game_view: SfBox<View>,
     hud_view: SfBox<View>,
     size: Vector2u,
@@ -24,10 +27,12 @@ pub struct Displayer {
 impl Displayer {
     pub fn new(size: Vector2u) -> Displayer {
         let texture = Texture::from_file("resources/cave_tileset.png").unwrap();
+        let font = Font::from_file("resources/VCR_OSD_MONO_1.001.ttf").unwrap();
 
         Displayer {
             size,
             texture,
+            font,
             game_view: View::new(
                 Vector2::from((size.x as f32/2., size.y as f32/2.)),
                 Vector2::from((size.x as f32, size.y as f32)),
@@ -80,6 +85,11 @@ impl Displayer {
         let center_y = (self.size.y / 2) as i32;
         let buffer_x = (self.size.x/4) as i32;
         let buffer_y = (self.size.y/4) as i32;
+        if (player_position.x - center_x).abs() + (player_position.y - center_y).abs() > 1000
+        {
+            self.set_center((player_position.x as f32, player_position.y as f32));
+            return
+        }
         let direction = (
             if (player_position.x - center_x > buffer_x) {
                 std::cmp::min(player_position.x - center_x - buffer_x, 3)
@@ -101,6 +111,7 @@ impl Displayer {
 
     pub fn display(&mut self, window: &mut RenderWindow, gamestate: Arc<RwLock<ClientGamestate>>) {
         window.clear(Color::rgb(60, 44, 41));
+        self.game_view.set_rotation(gamestate.read().unwrap().rotation);
         window.set_view(&self.game_view);
         for room in gamestate.read().unwrap().get_rooms() {
             if gamestate.read().unwrap().explored(room.position) {
@@ -120,7 +131,6 @@ impl Displayer {
 
     fn display_hud(&mut self, window: &mut RenderWindow, gamestate: &Arc<RwLock<ClientGamestate>>) {
 
-        println!("{}", gamestate.read().unwrap().gamestate.keys);
         let keys = gamestate.read().unwrap().gamestate.keys;
         for i in 0..keys {
             let mut rect = RectangleShape::new();
@@ -145,6 +155,14 @@ impl Displayer {
             rect.set_outline_color(Color::CYAN);
             rect.set_fill_color(Color::TRANSPARENT);
             window.draw(&rect);
+        }
+        for (index, message) in gamestate.read().unwrap().gamestate.messages.iter().enumerate() {
+            let mut text = Text::default();
+            text.set_font(&self.font);
+            text.set_string(&message.text);
+            text.set_fill_color(Color::WHITE);
+            text.set_position((40., self.size.y as f32-index as f32*40. - 40.));
+            window.draw(&text);
         }
     }
 
@@ -212,13 +230,4 @@ impl Displayer {
         ));
         window.draw(&sprite);
     }
-}
-
-fn ball<'a>(position: (f32, f32)) -> CircleShape<'a> {
-    let mut ball = CircleShape::default();
-    ball.set_radius(20.);
-    ball.set_origin((20., 20.));
-    ball.set_fill_color(Color::YELLOW);
-    ball.set_position(position);
-    ball
 }

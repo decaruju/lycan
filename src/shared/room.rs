@@ -30,7 +30,20 @@ pub enum RoomType {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum Item {
     Key,
+    Clear,
     Spin,
+    Bad,
+}
+
+impl Item {
+    pub fn to_string(&self) -> String {
+        match self {
+            Item::Key => "key".to_string(),
+            Item::Clear => "clear".to_string(),
+            Item::Spin => "spin".to_string(),
+            Item::Bad => "bad".to_string(),
+        }
+    }
 }
 
 impl RoomType {
