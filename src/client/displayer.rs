@@ -4,6 +4,8 @@ use lycan::shared::room::{Room, Tile, TileType, WallType, Item};
 use lycan::shared::utils::Direction;
 use sfml::{
     graphics::{
+        Text,
+        Font,
         CircleShape, Color, IntRect, RenderTarget, RenderWindow, Shape, Sprite, Texture,
         RectangleShape,
         Transformable,
@@ -16,6 +18,7 @@ use std::rc::Rc;
 
 pub struct Displayer {
     texture: SfBox<Texture>,
+    font: SfBox<Font>,
     game_view: SfBox<View>,
     hud_view: SfBox<View>,
     size: Vector2u,
@@ -24,10 +27,12 @@ pub struct Displayer {
 impl Displayer {
     pub fn new(size: Vector2u) -> Displayer {
         let texture = Texture::from_file("resources/cave_tileset.png").unwrap();
+        let font = Font::from_file("resources/VCR_OSD_MONO_1.001.ttf").unwrap();
 
         Displayer {
             size,
             texture,
+            font,
             game_view: View::new(
                 Vector2::from((size.x as f32/2., size.y as f32/2.)),
                 Vector2::from((size.x as f32, size.y as f32)),
@@ -146,6 +151,14 @@ impl Displayer {
             rect.set_outline_color(Color::CYAN);
             rect.set_fill_color(Color::TRANSPARENT);
             window.draw(&rect);
+        }
+        for (index, message) in gamestate.read().unwrap().gamestate.messages.iter().enumerate() {
+            let mut text = Text::default();
+            text.set_font(&self.font);
+            text.set_string(&message.text);
+            text.set_fill_color(Color::WHITE);
+            text.set_position((40., self.size.y as f32-index as f32*40. - 40.));
+            window.draw(&text);
         }
     }
 

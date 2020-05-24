@@ -12,6 +12,18 @@ pub struct Gamestate {
     pub map: Map,
     pub started: bool,
     pub keys: u32,
+    pub messages: Vec<Message>
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Message {
+    pub text: String,
+}
+
+impl Message {
+    pub fn new(text: String) -> Message {
+        Message{text}
+    }
 }
 
 impl Gamestate {
@@ -142,6 +154,7 @@ impl Default for Gamestate {
             map: Map::default(),
             started: false,
             keys: 0,
+            messages: vec![],
         }
     }
 }

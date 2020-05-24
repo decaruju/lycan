@@ -212,6 +212,7 @@ impl ClientGamestate {
         self.gamestate.map = data.map;
         self.gamestate.started = data.started;
         self.gamestate.keys = data.keys;
+        self.gamestate.messages = data.messages;
         for (player_id, player_state) in data.players {
             if self.gamestate.started && player_id == self.player_id.as_ref().unwrap().clone() {
                 continue;

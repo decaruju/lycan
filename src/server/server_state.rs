@@ -3,7 +3,7 @@ use std::{collections::HashMap, fmt::Debug};
 use uuid::Uuid;
 use rand;
 
-use lycan::shared::gamestate::{Gamestate, Player};
+use lycan::shared::gamestate::{Gamestate, Player, Message};
 use lycan::shared::room::{Item};
 
 #[derive(Debug)]
@@ -32,8 +32,8 @@ impl ServerGamestate {
         );
     }
 
-    pub fn update_player(&mut self, player_id: String, position: (f32, f32), ready: bool) -> Option<()> {
-        let player = self.gamestate.players.get_mut(&player_id)?;
+    pub fn update_player(&mut self, player_id: &String, position: (f32, f32), ready: bool) -> Option<()> {
+        let player = self.gamestate.players.get_mut(player_id)?;
         player.position = position;
         player.ready = ready;
         Some(())
@@ -83,7 +83,7 @@ impl ServerState {
         ready: bool,
     ) -> Option<&Gamestate> {
         let game = self.games.get_mut(&game_id)?;
-        game.update_player(player_id, position, ready)?;
+        game.update_player(&player_id, position, ready)?;
         if game.all_players_ready() {
            game.gamestate.started = true;
         }
@@ -107,8 +107,10 @@ impl ServerState {
             match game.gamestate.map.room(room_pos.0, room_pos.1)?.item {
                 Some((Item::Key, _)) => {
                     game.gamestate.keys += 1;
+                    game.gamestate.messages.push(Message::new(format!("{} has picked up a key!", game.gamestate.players.get(&player_id).unwrap().name)))
                 },
                 Some(_) => {
+                    game.gamestate.messages.push(Message::new(format!("{} has been cursed!", game.gamestate.players.get(&player_id).unwrap().name)))
                 },
                 None => {}
             }

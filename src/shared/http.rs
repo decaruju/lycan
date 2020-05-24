@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt::Debug};
 
 use serde::{Deserialize, Serialize};
 
-use crate::shared::gamestate::{Gamestate, Map, Player};
+use crate::shared::gamestate::{Gamestate, Map, Player, Message};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NewGameRequest {
@@ -42,6 +42,7 @@ pub struct UpdateResponse {
     pub map: Map,
     pub started: bool,
     pub keys: u32,
+    pub messages: Vec<Message>,
 }
 
 impl UpdateResponse {
@@ -51,6 +52,7 @@ impl UpdateResponse {
             players: gamestate.players.clone(),
             map: gamestate.map.clone(),
             keys: gamestate.keys,
+            messages: gamestate.messages.clone(),
         }
     }
 }

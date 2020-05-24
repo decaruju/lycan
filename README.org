@@ -53,7 +53,6 @@
   TODO - Rules in waiting screen
   TODO - 5 4 3 2 1 before game start
   TODO - S'assurer que la caverne est connexe et intéressante
-  TODO - Système d'announcements (2 clés ont été trouvées)
   TODO - Round de jeu (condition de fin et 3 rounds de jeu)
   TODO - Condition de victoire
   TODO - Implémenter le spin curse
@@ -64,7 +63,9 @@
   TODO - bloquer la porte si on n'a pas toutes les clefs
   TODO - ne pas panic à la fin de la game
   TODO - Limiter la taille de la map
+  TODO - Faire disparaître les messages après un certain temps
 
+  DONE - Système d'announcements (2 clés ont été trouvées)
   DONE - Implémenter le clear curse
   DONE - Inventory (Clés picked up)
   DONE - Waiting screen et start syncronisé
@@ -72,6 +73,10 @@
   DONE - Cacher les pièces pas explorées
   DONE - Item spawn
   DONE - Spawner une sortie
+** Art
+  TODO - Cave assets
+  TODO - Ambiant music
+  TODO - SFX
 
 * Business
   5$ pour starter une game, mais join gratuit
