@@ -1,6 +1,6 @@
 use lycan::shared::gamestate::{Gamestate, Player};
 use lycan::shared::http::UpdateResponse;
-use lycan::shared::room::{Room, Item};
+use lycan::shared::room::{Item, Room};
 use lycan::shared::utils::Direction;
 use std::collections::HashMap;
 
@@ -143,16 +143,14 @@ impl ClientGamestate {
         room.item = None;
         if let Some((item, _)) = item {
             match item {
-                Item::Bad => {
-                },
-                Item::Key => {
-                },
+                Item::Bad => {}
+                Item::Key => {}
                 Item::Spin => {
                     self.rotation += 30.;
-                },
+                }
                 Item::Clear => {
                     self.explored_rooms.clear();
-                },
+                }
             }
         }
         self.cleared_rooms.push(self.player_room_coord());
@@ -213,7 +211,8 @@ impl ClientGamestate {
         if data.round > self.gamestate.round {
             self.end = false;
             let player_id = self.player_id.as_ref().unwrap();
-            self.gamestate.players.get_mut(player_id).unwrap().position = data.players.get(player_id).unwrap().position;
+            self.gamestate.players.get_mut(player_id).unwrap().position =
+                data.players.get(player_id).unwrap().position;
             self.new_rooms.push(self.player_room_coord());
             self.gamestate.round = data.round;
         }

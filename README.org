@@ -44,7 +44,7 @@
   TODO - Quit button
   TODO - Player_name input screen
   TODO - Confirm name button
-  TODO - Text input (!!!)
+  DONE - Text input (!!!)
   TODO - Input de game_id
   TODO - Input de player_name
   TODO - Display player_name in game
