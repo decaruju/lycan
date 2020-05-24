@@ -6,14 +6,14 @@ use sfml::{
     system::{SfBox, Vector2},
 };
 
-pub struct MenuButton<'a> {
+pub struct TextField<'a> {
     pub title_text: Text<'a>,
     pub background: RectangleShape<'a>,
     position: Vector2<f32>,
     size: Vector2<f32>,
 }
 
-impl<'a> MenuButton<'a> {
+impl<'a> TextField<'a> {
     pub fn new(size: (f32, f32), title: String, font: &'a SfBox<Font>) -> Self {
         let size = Vector2::from(size);
         let position = Vector2::from((0., 0.));
@@ -46,7 +46,7 @@ impl<'a> MenuButton<'a> {
     }
 }
 
-impl<'a> Drawable for MenuButton<'a> {
+impl<'a> Drawable for TextField<'a> {
     fn draw<'s: 'shader, 'texture, 'shader, 'shader_texture>(
         &'s self,
         render_target: &mut dyn RenderTarget,

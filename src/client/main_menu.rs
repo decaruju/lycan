@@ -19,8 +19,9 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
     let font = Font::from_file("resources/VCR_OSD_MONO_1.001.ttf").unwrap();
 
     let mut startgame_button =
-        button::MenuButton::new((300., 100.), String::from("start the game"), &font);
-    startgame_button.title_text.set_font(&font);
+        button::MenuButton::new((300., 70.), String::from("start the game"), &font);
+    let mut joingame_field =
+        button::MenuButton::new((300., 70.), String::from("join a game"), &font);
 
     let size = window.size();
     let mut center = window
@@ -36,7 +37,6 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
                 | Event::KeyPressed {
                     code: Key::Escape, ..
                 } => return MenuChoice::Quit,
-                Event::MouseMoved { x, y } => {}
                 Event::Resized { width, height } => {
                     center = window.map_pixel_to_coords(
                         Vector2::from((width as i32 / 2, height as i32 / 2)),
@@ -53,6 +53,7 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
                     }
                     _ => {}
                 },
+                Event::TextEntered { unicode } => println!("{:?}", unicode),
                 _ => {}
             }
         }
@@ -61,8 +62,10 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
         window.set_view(&menu_view);
 
         startgame_button.set_position((center.x, center.y));
+        joingame_field.set_position((center.x, center.y + 100.));
 
         window.draw(&startgame_button);
+        window.draw(&joingame_field);
         window.display();
     }
 }
