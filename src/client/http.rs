@@ -50,6 +50,7 @@ pub fn update(
     new_rooms: Vec<(i32, i32)>,
     cleared_rooms: Vec<(i32, i32)>,
     ready: bool,
+    end: bool,
 ) -> ClientResult<UpdateResponse> {
     let response: UpdateResponse = post(
         "http://localhost:1337/update",
@@ -60,6 +61,7 @@ pub fn update(
             new_rooms,
             cleared_rooms,
             ready,
+            end,
         },
     )
     .unwrap();

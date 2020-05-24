@@ -35,6 +35,17 @@ pub enum Item {
     Bad,
 }
 
+impl Item {
+    pub fn to_string(&self) -> String {
+        match self {
+            Item::Key => "key".to_string(),
+            Item::Clear => "clear".to_string(),
+            Item::Spin => "spin".to_string(),
+            Item::Bad => "bad".to_string(),
+        }
+    }
+}
+
 impl RoomType {
     pub fn tile(&self, position: (i32, i32)) -> Tile {
         match self {

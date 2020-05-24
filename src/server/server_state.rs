@@ -3,20 +3,47 @@ use std::{collections::HashMap, fmt::Debug};
 use uuid::Uuid;
 use rand;
 
-use lycan::shared::gamestate::{Gamestate, Player, Message};
+use lycan::shared::gamestate::{Gamestate, Player, Message, Map};
 use lycan::shared::room::{Item};
 
 #[derive(Debug)]
 pub struct ServerGamestate {
     pub gamestate: Gamestate,
+    pub curses: HashMap<String, bool>,
 }
 
 impl ServerGamestate {
     pub fn new() -> ServerGamestate {
         ServerGamestate {
             gamestate: Gamestate::default(),
+            curses: HashMap::new(),
         }
     }
+
+    pub fn next_round(&mut self) {
+        self.gamestate.map = Map::default();
+        self.gamestate.keys = 0;
+        self.gamestate.round += 1;
+        self.gamestate.messages = vec![];
+        self.curses = HashMap::new();
+        for (_id, player) in self.gamestate.players.iter_mut() {
+            player.position = (
+                ((rand::random::<i32>() % 16 - 8) * 16 * 16 + 16*8) as f32,
+                ((rand::random::<i32>() % 16 - 8) * 16 * 16 + 16*8) as f32,
+            );
+        }
+    }
+
+    pub fn curse(&mut self, curse: Item) -> Item {
+        match self.curses.get(&curse.to_string()) {
+            Some(true) => Item::Key,
+            _ => {
+                self.curses.insert(curse.to_string(), true);
+                curse
+            }
+        }
+    }
+
 
     pub fn add_player(&mut self, uuid: String, player_name: String) {
         self.gamestate.players.insert(
@@ -81,24 +108,31 @@ impl ServerState {
         new_rooms: Vec<(i32, i32)>,
         cleared_rooms: Vec<(i32, i32)>,
         ready: bool,
+        end: bool,
     ) -> Option<&Gamestate> {
         let game = self.games.get_mut(&game_id)?;
+        if end {
+            game.next_round();
+            game.gamestate.messages.push(Message::new(format!("{} has found the exit, a new round is starting!", game.gamestate.players.get(&player_id).unwrap().name)));
+            return Some(&game.gamestate);
+        }
         game.update_player(&player_id, position, ready)?;
         if game.all_players_ready() {
            game.gamestate.started = true;
         }
         for room_pos in new_rooms {
             let keys = game.gamestate.keys;
+            let item = match rand::random::<u32>() % 4 {
+                0 => game.curse(Item::Clear),
+                1 => game.curse(Item::Spin),
+                2 => game.curse(Item::Bad),
+                _ => game.curse(Item::Key),
+            };
             if let Some(room) = game.gamestate.add_room(room_pos) {
                 if keys < 8 && rand::random::<u32>() % 2 == 0 {
                     let x = rand::random::<u32>() % 8 + 4;
                     let y = rand::random::<u32>() % 8 + 4;
-                    room.item = Some((match rand::random::<u32>() % 4 {
-                        0 => Item::Clear,
-                        1 => Item::Spin,
-                        2 => Item::Bad,
-                        _ => Item::Key,
-                    }, (x, y)));
+                    room.item = Some((item, (x, y)));
                     println!("item at {}, {}", x, y);
                 }
             }

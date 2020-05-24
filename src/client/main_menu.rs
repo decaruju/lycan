@@ -46,7 +46,6 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
                 }
                 Event::MouseButtonPressed { button, x, y } => match button {
                     mouse::Button::Left => {
-                        println!("{} - {}", x, y);
                         if startgame_button.get_bounds().contains2(x as f32, y as f32) {
                             return MenuChoice::StartGame;
                         }

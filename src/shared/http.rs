@@ -34,6 +34,7 @@ pub struct UpdateRequest {
     pub new_rooms: Vec<(i32, i32)>,
     pub cleared_rooms: Vec<(i32, i32)>,
     pub ready: bool,
+    pub end: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -43,6 +44,7 @@ pub struct UpdateResponse {
     pub started: bool,
     pub keys: u32,
     pub messages: Vec<Message>,
+    pub round: u32,
 }
 
 impl UpdateResponse {
@@ -53,6 +55,7 @@ impl UpdateResponse {
             map: gamestate.map.clone(),
             keys: gamestate.keys,
             messages: gamestate.messages.clone(),
+            round: gamestate.round,
         }
     }
 }

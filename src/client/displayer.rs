@@ -85,6 +85,11 @@ impl Displayer {
         let center_y = (self.size.y / 2) as i32;
         let buffer_x = (self.size.x/4) as i32;
         let buffer_y = (self.size.y/4) as i32;
+        if (player_position.x - center_x).abs() + (player_position.y - center_y).abs() > 1000
+        {
+            self.set_center((player_position.x as f32, player_position.y as f32));
+            return
+        }
         let direction = (
             if (player_position.x - center_x > buffer_x) {
                 std::cmp::min(player_position.x - center_x - buffer_x, 3)
@@ -126,7 +131,6 @@ impl Displayer {
 
     fn display_hud(&mut self, window: &mut RenderWindow, gamestate: &Arc<RwLock<ClientGamestate>>) {
 
-        println!("{}", gamestate.read().unwrap().gamestate.keys);
         let keys = gamestate.read().unwrap().gamestate.keys;
         for i in 0..keys {
             let mut rect = RectangleShape::new();

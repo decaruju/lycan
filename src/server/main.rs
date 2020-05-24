@@ -86,6 +86,7 @@ fn update(request: UpdateRequest, state: State) -> Result<String> {
         request.new_rooms,
         request.cleared_rooms,
         request.ready,
+        request.end,
     ) {
         Some(gamestate) => {
             data(UpdateResponse::new(gamestate))

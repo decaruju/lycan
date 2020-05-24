@@ -12,6 +12,7 @@ pub struct ClientGamestate {
     pub cleared_rooms: Vec<(i32, i32)>,
     pub explored_rooms: HashMap<(i32, i32), bool>,
     pub rotation: f32,
+    pub end: bool,
 }
 
 impl ClientGamestate {
@@ -24,6 +25,7 @@ impl ClientGamestate {
             explored_rooms: HashMap::new(),
             cleared_rooms: Vec::new(),
             rotation: 0.,
+            end: false,
         }
     }
 
@@ -91,42 +93,41 @@ impl ClientGamestate {
         )
     }
 
-    pub fn player_room(&self) -> &Room {
+    pub fn player_room(&self) -> Option<&Room> {
         let player_room_coord = self.player_room_coord();
+
         self.gamestate
             .map
             .room(player_room_coord.0, player_room_coord.1)
-            .unwrap()
     }
 
-    pub fn mut_player_room(&mut self) -> &mut Room {
+    pub fn mut_player_room(&mut self) -> Option<&mut Room> {
         let player_room_coord = self.player_room_coord();
         self.gamestate
             .map
             .mut_room(player_room_coord.0, player_room_coord.1)
-            .unwrap()
     }
 
     pub fn player_in_wall(&self) -> bool {
         let tile = self.player_tile();
-        let room = self.player_room();
+        let room = self.player_room().unwrap();
         room.is_wall(tile)
     }
 
     pub fn player_in_door(&self) -> bool {
-        let room = self.player_room();
+        let room = self.player_room().unwrap();
         let tile = self.player_tile();
         room.is_door(tile)
     }
 
     pub fn player_in_exit(&self) -> bool {
-        let room = self.player_room();
+        let room = self.player_room().unwrap();
         let tile = self.player_tile();
         room.is_exit(tile)
     }
 
     pub fn player_on_item(&self) -> bool {
-        let room = self.player_room();
+        let room = self.player_room().unwrap();
         let tile = self.player_tile();
         if let Some(item) = &room.item {
             let pos = item.1;
@@ -137,7 +138,7 @@ impl ClientGamestate {
     }
 
     pub fn remove_item(&mut self) {
-        let mut room = self.mut_player_room();
+        let mut room = self.mut_player_room().unwrap();
         let item = room.item.clone();
         room.item = None;
         if let Some((item, _)) = item {
@@ -209,6 +210,13 @@ impl ClientGamestate {
     }
 
     pub fn update(&mut self, data: UpdateResponse) {
+        if data.round > self.gamestate.round {
+            self.end = false;
+            let player_id = self.player_id.as_ref().unwrap();
+            self.gamestate.players.get_mut(player_id).unwrap().position = data.players.get(player_id).unwrap().position;
+            self.new_rooms.push(self.player_room_coord());
+            self.gamestate.round = data.round;
+        }
         self.gamestate.map = data.map;
         self.gamestate.started = data.started;
         self.gamestate.keys = data.keys;
