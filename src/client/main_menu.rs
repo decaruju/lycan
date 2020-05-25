@@ -16,7 +16,7 @@ pub enum MenuChoice {
 }
 
 pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoice {
-    let font = Font::from_file("resources/VCR_OSD_MONO_1.001.ttf").unwrap();
+    let font = Font::from_file("src/client/resources/VCR_OSD_MONO_1.001.ttf").unwrap();
 
     let mut startgame_button =
         button::MenuButton::new((300., 70.), String::from("start the game"), &font);
