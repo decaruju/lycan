@@ -49,11 +49,18 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
                         if startgame_button.get_bounds().contains2(x as f32, y as f32) {
                             return MenuChoice::StartGame;
                         }
+                        if joingame_field.get_bounds().contains2(x as f32, y as f32) {
+                            joingame_field.is_focus = true;
+                        } else {
+                            joingame_field.is_focus = false;
+                        }
                     }
                     _ => {}
                 },
                 Event::TextEntered { unicode } => {
-                    joingame_field.add_unicode_char(unicode);
+                    if joingame_field.is_focus {
+                        joingame_field.add_unicode_char(unicode);
+                    }
                 }
                 _ => {}
             }
