@@ -22,8 +22,8 @@ pub struct Displayer {
 
 impl Displayer {
     pub fn new(size: Vector2u) -> Displayer {
-        let texture = Texture::from_file("resources/cave_tileset.png").unwrap();
-        let font = Font::from_file("resources/VCR_OSD_MONO_1.001.ttf").unwrap();
+        let texture = Texture::from_file("src/client/resources/cave_tileset.png").unwrap();
+        let font = Font::from_file("src/client/resources/VCR_OSD_MONO_1.001.ttf").unwrap();
 
         Displayer {
             size,
