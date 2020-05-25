@@ -25,7 +25,6 @@ impl<'a> MenuButton<'a> {
         let text_size = title_text.local_bounds();
         let text_center = (text_size.width / 2., text_size.height / 2.);
         title_text.set_origin(text_center);
-        println!("{:?}", text_center);
         Self {
             title_text: title_text,
             background: background,
