@@ -9,6 +9,7 @@ use sfml::{
 pub struct MenuButton<'a> {
     pub title_text: Text<'a>,
     pub background: RectangleShape<'a>,
+    pub is_pressed: bool,
 }
 
 impl<'a> MenuButton<'a> {
@@ -17,7 +18,9 @@ impl<'a> MenuButton<'a> {
         let mut background = RectangleShape::with_size(size);
         let center = (size.x / 2., size.y / 2.);
         background.set_origin(center);
-        // TODO only work if run from client folder
+        background.set_outline_color(Color::WHITE);
+        background.set_outline_thickness(5.);
+
         let mut title_text = Text::default();
         title_text.set_string(title.as_str());
         title_text.set_fill_color(Color::RED);
@@ -28,6 +31,7 @@ impl<'a> MenuButton<'a> {
         Self {
             title_text: title_text,
             background: background,
+            is_pressed: false,
         }
     }
 
@@ -37,6 +41,13 @@ impl<'a> MenuButton<'a> {
     }
     pub fn get_bounds(&mut self) -> FloatRect {
         self.background.global_bounds()
+    }
+    pub fn mouse_hover(&mut self, x: f32, y: f32) {
+        if self.background.global_bounds().contains2(x, y) {
+            self.background.set_outline_color(Color::BLACK);
+        } else {
+            self.background.set_outline_color(Color::WHITE);
+        }
     }
 }
 

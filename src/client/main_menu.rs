@@ -45,8 +45,23 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
                 }
                 Event::MouseButtonPressed { button, x, y } => match button {
                     mouse::Button::Left => {
-                        println!("{} - {}", x, y);
                         if startgame_button.get_bounds().contains2(x as f32, y as f32) {
+                            startgame_button.is_pressed = true;
+                        }
+                        if joingame_field.get_bounds().contains2(x as f32, y as f32) {
+                            joingame_field.is_focus = true;
+                        } else {
+                            joingame_field.is_focus = false;
+                        }
+                    }
+                    _ => {}
+                },
+                Event::MouseButtonReleased { button, x, y } => match button {
+                    mouse::Button::Left => {
+                        println!("{} - {}", x, y);
+                        if startgame_button.get_bounds().contains2(x as f32, y as f32)
+                            && startgame_button.is_pressed
+                        {
                             return MenuChoice::StartGame;
                         }
                         if joingame_field.get_bounds().contains2(x as f32, y as f32) {
@@ -57,6 +72,10 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
                     }
                     _ => {}
                 },
+                Event::MouseMoved { x, y } => {
+                    startgame_button.mouse_hover(x as f32, y as f32);
+                }
+
                 Event::TextEntered { unicode } => {
                     if joingame_field.is_focus {
                         joingame_field.add_unicode_char(unicode);
@@ -66,7 +85,7 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
             }
         }
 
-        window.clear(Color::BLUE);
+        window.clear(Color::rgb(60, 44, 41));
         window.set_view(&menu_view);
 
         startgame_button.set_position((center.x, center.y));
