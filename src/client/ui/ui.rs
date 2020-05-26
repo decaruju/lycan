@@ -11,10 +11,9 @@ use sfml::{
 
 use crate::ui::ui_element::UiElement;
 
-
-pub struct Ui<'a, T, E: Box<dyn UiElement<T> + Drawable>> {
-    elements: Vec<E>,
-    focused_element: Option<E>,
+pub struct Ui<'a, T> {
+    elements: Vec<Box<dyn UiElement<T>>>,
+    focused_element: Option<Box<dyn UiElement<T>>>,
     window: &'a mut RenderWindow,
     mousedown_coords: (i32, i32),
     center: (f32, f32),
