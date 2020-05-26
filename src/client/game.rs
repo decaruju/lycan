@@ -1,15 +1,13 @@
 use crate::client_state::ClientGamestate;
 use crate::displayer::Displayer;
 use crate::http;
-use lycan::shared::gamestate::{Gamestate, Player};
-use lycan::shared::room::{Room, Tile, TileType, WallType};
+use lycan::shared::room::{TileType};
 use lycan::shared::utils::Direction;
 use sfml::{
     graphics::{
-        CircleShape, Color, IntRect, RectangleShape, RenderTarget, RenderWindow, Shape, Sprite,
-        Texture, Transformable, View,
+        CircleShape, Color, RenderTarget, RenderWindow, Shape, Sprite, Transformable,
     },
-    system::{SfBox, Vector2},
+    system::Vector2,
     window::{Event, Key},
 };
 use std::{

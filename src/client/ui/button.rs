@@ -6,14 +6,42 @@ use sfml::{
     system::{SfBox, Vector2},
 };
 
-pub struct MenuButton<'a> {
+use crate::ui::ui_element::UiElement;
+
+pub struct MenuButton<'a, T> {
     pub title_text: Text<'a>,
     pub background: RectangleShape<'a>,
     pub is_pressed: bool,
+    pub result: T,
 }
 
-impl<'a> MenuButton<'a> {
-    pub fn new(size: (f32, f32), title: String, font: &'a SfBox<Font>) -> Self {
+impl<T> UiElement<T> for MenuButton<'_, T> {
+    fn point_is_on(&self, x: i32, y: i32) -> bool {
+        self.background.global_bounds().contains2(x as f32, y as f32)
+    }
+
+    fn hover(&mut self, x: i32, y: i32) {
+        if self.point_is_on(x, y) {
+            self.background.set_outline_color(Color::WHITE);
+        } else {
+            self.background.set_outline_color(Color::BLACK);
+        }
+    }
+
+    fn click(&self) -> Option<T> {
+        Some(self.result)
+    }
+
+    fn text_entered(&mut self, text: char) {}
+
+    fn set_position(&mut self, position: (f32, f32)) {
+        self.background.set_position(position);
+        self.title_text.set_position(position);
+    }
+}
+
+impl<'a, T> MenuButton<'a, T> {
+    pub fn new(size: (f32, f32), title: String, font: &'a SfBox<Font>, result: T) -> Self {
         let size = Vector2::from(size);
         let mut background = RectangleShape::with_size(size);
         let center = (size.x / 2., size.y / 2.);
@@ -32,26 +60,16 @@ impl<'a> MenuButton<'a> {
             title_text: title_text,
             background: background,
             is_pressed: false,
+            result: result,
         }
     }
 
-    pub fn set_position(&mut self, position: (f32, f32)) {
-        self.background.set_position(position);
-        self.title_text.set_position(position);
-    }
     pub fn get_bounds(&mut self) -> FloatRect {
         self.background.global_bounds()
     }
-    pub fn mouse_hover(&mut self, x: f32, y: f32) {
-        if self.background.global_bounds().contains2(x, y) {
-            self.background.set_outline_color(Color::BLACK);
-        } else {
-            self.background.set_outline_color(Color::WHITE);
-        }
-    }
 }
 
-impl<'a> Drawable for MenuButton<'a> {
+impl<'a, T> Drawable for MenuButton<'a, T> {
     fn draw<'s: 'shader, 'texture, 'shader, 'shader_texture>(
         &'s self,
         render_target: &mut dyn RenderTarget,

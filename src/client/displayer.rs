@@ -9,7 +9,6 @@ use sfml::{
     },
     system::{SfBox, Vector2, Vector2u},
 };
-use std::rc::Rc;
 use std::sync::{Arc, RwLock};
 
 pub struct Displayer {
@@ -82,16 +81,16 @@ impl Displayer {
             return;
         }
         let direction = (
-            if (player_position.x - center_x > buffer_x) {
+            if player_position.x - center_x > buffer_x {
                 std::cmp::min(player_position.x - center_x - buffer_x, 3)
-            } else if (center_x - player_position.x > buffer_x) {
+            } else if center_x - player_position.x > buffer_x {
                 std::cmp::max(player_position.x - center_x + buffer_x, -3)
             } else {
                 0
             } as f32,
-            if (player_position.y - center_y > buffer_y) {
+            if player_position.y - center_y > buffer_y {
                 std::cmp::min(player_position.y - center_y - buffer_y, 3)
-            } else if (center_y - player_position.y > buffer_y) {
+            } else if center_y - player_position.y > buffer_y {
                 std::cmp::max(player_position.y - center_y + buffer_y, -3)
             } else {
                 0

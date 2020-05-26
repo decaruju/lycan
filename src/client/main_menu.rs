@@ -1,10 +1,10 @@
 use sfml::{
     graphics::{
-        CircleShape, Color, Drawable, Font, Rect, RectangleShape, RenderStates, RenderTarget,
-        RenderWindow, Shape, Text, Transformable, View,
+        Color, Drawable, Font, RenderTarget,
+        RenderWindow, Transformable, View,
     },
     system::Vector2,
-    window::{mouse, ContextSettings, Event, Key, Style},
+    window::{mouse, Event, Key},
 };
 
 use crate::ui::{button, text_field};
@@ -19,7 +19,7 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
     let font = Font::from_file("src/client/resources/VCR_OSD_MONO_1.001.ttf").unwrap();
 
     let mut startgame_button =
-        button::MenuButton::new((300., 70.), String::from("start the game"), &font);
+        button::MenuButton::new((300., 70.), String::from("start the game"), &font, 0);
     let mut joingame_field = text_field::TextField::new((300., 70.), &font);
 
     let size = window.size();
@@ -73,7 +73,7 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
                     _ => {}
                 },
                 Event::MouseMoved { x, y } => {
-                    startgame_button.mouse_hover(x as f32, y as f32);
+                    // startgame_button.mouse_hover(x as f32, y as f32);
                 }
 
                 Event::TextEntered { unicode } => {
@@ -88,7 +88,7 @@ pub fn main_menu(setting: &mut Settings, window: &mut RenderWindow) -> MenuChoic
         window.clear(Color::rgb(60, 44, 41));
         window.set_view(&menu_view);
 
-        startgame_button.set_position((center.x, center.y));
+        // startgame_button.set_position((center.x, center.y));
         joingame_field.set_position((center.x, center.y + 100.));
 
         window.draw(&startgame_button);
