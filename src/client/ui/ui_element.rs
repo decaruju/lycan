@@ -6,4 +6,5 @@ pub trait UiElement<T>: Drawable {
     fn click(&self) -> Option<T>;
     fn text_entered(&mut self, text: char);
     fn set_position(&mut self, position: (f32, f32));
+    fn drawable(&self) -> Box<&Drawable>;
 }

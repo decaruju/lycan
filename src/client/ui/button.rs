@@ -8,14 +8,14 @@ use sfml::{
 
 use crate::ui::ui_element::UiElement;
 
-pub struct MenuButton<'a, T> {
+pub struct MenuButton<'a, T> where T: Clone {
     pub title_text: Text<'a>,
     pub background: RectangleShape<'a>,
     pub is_pressed: bool,
     pub result: T,
 }
 
-impl<T> UiElement<T> for MenuButton<'_, T> {
+impl<T> UiElement<T> for MenuButton<'_, T> where T: Clone {
     fn point_is_on(&self, x: i32, y: i32) -> bool {
         self.background.global_bounds().contains2(x as f32, y as f32)
     }
@@ -29,7 +29,7 @@ impl<T> UiElement<T> for MenuButton<'_, T> {
     }
 
     fn click(&self) -> Option<T> {
-        Some(self.result)
+        Some(self.result.clone())
     }
 
     fn text_entered(&mut self, text: char) {}
@@ -38,9 +38,13 @@ impl<T> UiElement<T> for MenuButton<'_, T> {
         self.background.set_position(position);
         self.title_text.set_position(position);
     }
+
+    fn drawable(&self) -> Box<&Drawable> {
+        Box::new(self)
+    }
 }
 
-impl<'a, T> MenuButton<'a, T> {
+impl<'a, T> MenuButton<'a, T> where T: Clone {
     pub fn new(size: (f32, f32), title: String, font: &'a SfBox<Font>, result: T) -> Self {
         let size = Vector2::from(size);
         let mut background = RectangleShape::with_size(size);
@@ -69,7 +73,7 @@ impl<'a, T> MenuButton<'a, T> {
     }
 }
 
-impl<'a, T> Drawable for MenuButton<'a, T> {
+impl<'a, T> Drawable for MenuButton<'a, T> where T: Clone {
     fn draw<'s: 'shader, 'texture, 'shader, 'shader_texture>(
         &'s self,
         render_target: &mut dyn RenderTarget,
