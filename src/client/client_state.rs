@@ -15,7 +15,7 @@ pub struct ClientGamestate {
 }
 
 impl ClientGamestate {
-    pub fn load(_string: String) -> ClientGamestate {
+    pub fn default() -> ClientGamestate {
         ClientGamestate {
             gamestate: Gamestate::default(),
             new_rooms: Vec::new(),

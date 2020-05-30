@@ -6,6 +6,8 @@ use sfml::{
     system::{SfBox, Vector2},
 };
 
+use std::sync::Arc;
+
 use crate::ui::ui_element::UiElement;
 
 pub struct MenuButton<'a, T> where T: Clone {
@@ -15,7 +17,7 @@ pub struct MenuButton<'a, T> where T: Clone {
     pub result: T,
 }
 
-impl<T> UiElement<T> for MenuButton<'_, T> where T: Clone {
+impl<'a, T> UiElement<T> for MenuButton<'a, T> where T: Clone {
     fn point_is_on(&self, x: i32, y: i32) -> bool {
         self.background.global_bounds().contains2(x as f32, y as f32)
     }
@@ -44,8 +46,8 @@ impl<T> UiElement<T> for MenuButton<'_, T> where T: Clone {
     }
 }
 
-impl<'a, T> MenuButton<'a, T> where T: Clone {
-    pub fn new(size: (f32, f32), title: String, font: &'a SfBox<Font>, result: T) -> Self {
+impl<'a, T: 'a> MenuButton<'a, T> where T: Clone {
+    pub fn new(size: (f32, f32), title: String, result: T, font: &'a Font) -> Self {
         let size = Vector2::from(size);
         let mut background = RectangleShape::with_size(size);
         let center = (size.x / 2., size.y / 2.);
@@ -56,10 +58,10 @@ impl<'a, T> MenuButton<'a, T> where T: Clone {
         let mut title_text = Text::default();
         title_text.set_string(title.as_str());
         title_text.set_fill_color(Color::RED);
-        title_text.set_font(&font);
         let text_size = title_text.local_bounds();
         let text_center = (text_size.width / 2., text_size.height / 2.);
         title_text.set_origin(text_center);
+        title_text.set_font(font);
         Self {
             title_text: title_text,
             background: background,

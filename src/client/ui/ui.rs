@@ -1,6 +1,6 @@
 use sfml::{
     graphics::{
-        Color, Drawable, RenderWindow, View, RenderTarget, Transformable
+        Color, Drawable, RenderWindow, View, RenderTarget, Transformable, Font
     },
     window::{
         mouse,
@@ -11,37 +11,33 @@ use sfml::{
 
 use crate::ui::ui_element::UiElement;
 
-pub struct Ui<'a, T> {
+pub struct Ui<T> {
     elements: Vec<Box<dyn UiElement<T>>>,
     focused_index: Option<usize>,
-    window: &'a mut RenderWindow,
     mousedown_coords: (i32, i32),
-    center: (f32, f32),
+    size: Vector2<u32>,
     view: SfBox<View>,
 }
 
-impl<'a, T> Ui<'a, T> {
-    pub fn new(window: &'a mut RenderWindow) -> Ui<'a, T> {
-        let size = window.size();
-        let mut center = window.map_pixel_to_coords_current_view(Vector2::from((size.x as i32 / 2, size.y as i32 / 2)));
+impl<T> Ui<T> {
+    pub fn new(size: Vector2<u32>) -> Ui<T> {
         let mut view = View::new(
-            Vector2::from(center),
-            Vector2::from((window.size().x as f32, window.size().y as f32)),
+            Vector2::from(((size.x/2) as f32, (size.y/2) as f32)),
+            Vector2::from((size.x as f32, size.y as f32)),
         );
 
-        Ui::<'a>{
+        Ui{
             elements: vec![],
-            window,
             focused_index: None,
             mousedown_coords: (0, 0),
-            center: (center.x, center.y),
+            size,
             view,
         }
     }
 
-    pub fn handle(&mut self) -> T {
+    pub fn handle(&mut self, window: &mut RenderWindow) -> T {
         loop {
-            while let Some(event) = self.window.poll_event() {
+            while let Some(event) = window.poll_event() {
                 match event {
                     Event::MouseButtonPressed { button: mouse::Button::Left, x, y } => {
                         self.mousedown_coords = (x, y);
@@ -74,7 +70,7 @@ impl<'a, T> Ui<'a, T> {
                 }
             }
 
-            self.render();
+            self.render(window);
         }
     }
 
@@ -82,12 +78,12 @@ impl<'a, T> Ui<'a, T> {
         self.elements.push(element);
     }
 
-    fn render(&mut self) {
-        self.window.clear(Color::rgb(60, 44, 41));
+    fn render(&mut self, window: &mut RenderWindow) {
+        window.clear(Color::rgb(60, 44, 41));
         for (index, element) in self.elements.iter_mut().enumerate() {
-            element.set_position((self.center.0 as f32, self.center.0 as f32 + index as f32 * 100.));
-            self.window.draw(*element.drawable());
+            element.set_position(((self.size.x/2) as f32, (self.size.y/2) as f32 + index as f32 * 100.));
+            window.draw(*element.drawable());
         }
-        self.window.display();
+        window.display();
     }
 }

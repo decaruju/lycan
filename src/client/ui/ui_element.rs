@@ -1,4 +1,7 @@
-use sfml::graphics::{Drawable};
+use sfml::{
+    graphics::{Drawable, Font},
+    system::{SfBox},
+};
 
 pub trait UiElement<T>: Drawable {
     fn hover(&mut self, x: i32, y: i32);

@@ -31,12 +31,12 @@ pub fn new_game() -> ClientResult<String> {
     Ok(response.game_id)
 }
 
-pub fn join_game(game_id: &str) -> ClientResult<JoinGameResponse> {
+pub fn join_game(game_id: &str, player_name: &str) -> ClientResult<JoinGameResponse> {
     let response: JoinGameResponse = post(
         "http://localhost:1337/join",
         JoinGameRequest {
             game_id: game_id.to_string(),
-            player_name: "Polensky".to_string(),
+            player_name: player_name.to_string(),
         },
     )
     .unwrap();
