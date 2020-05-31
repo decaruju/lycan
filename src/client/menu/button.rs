@@ -15,15 +15,67 @@ use sfml::{
         Vector2f,
     },
 };
+use crate::menu::widget::{WidgetTrait, Widget};
 
 pub struct Button<'a, T> where T: Clone {
     pub title_text: Text<'a>,
     pub background: RectangleShape<'a>,
     pub result: T,
+    pub id: String,
+    pub focused: bool,
+}
+
+impl<'a, T> WidgetTrait<T> for Button<'a, T> where T: Clone {
+    fn contains(&self, point: Vector2i) -> bool {
+        self.background.global_bounds().contains(Vector2f{
+            x: point.x as f32,
+            y: point.y as f32,
+        })
+    }
+
+    fn hover(&mut self, on: bool) {
+        if on {
+            self.background.set_outline_color(Color::BLUE);
+        } else {
+            self.background.set_outline_color(Color::WHITE);
+        }
+    }
+
+    fn focus(&mut self, on: bool) {
+        self.focused = on;
+        if on {
+            self.background.set_outline_color(Color::RED);
+        } else {
+            self.background.set_outline_color(Color::WHITE);
+        }
+    }
+
+    fn click(&self) -> Option<T> {
+        Some(self.result.clone())
+    }
+
+    fn set_position(&mut self, position: (f32, f32)) {
+        self.background.set_position(position);
+        self.title_text.set_position(position);
+    }
+
+    fn data(&self) -> Option<&str> {
+        None
+    }
+
+    fn id(&self) -> &str {
+        &self.id
+    }
+
+    fn enter_char(&mut self, unicode: char) {}
+
+    fn focused(&self) -> bool {
+        self.focused
+    }
 }
 
 impl<'a, T> Button<'a, T> where T: Clone {
-    pub fn new(text: &str, font: &'a Font, result: T) -> Button<'a, T> {
+    pub fn new(text: &str, font: &'a Font, result: T, id: String) -> Widget<'a, T> {
         let size = Vector2i{x: 300, y: 60};
         let mut background = RectangleShape::with_size(Vector2f{
             x: size.x as f32,
@@ -43,40 +95,17 @@ impl<'a, T> Button<'a, T> where T: Clone {
         let text_size = title_text.local_bounds();
         title_text.set_origin((text_size.width/2., text_size.height/2.));
 
-        Button{
-            title_text,
-            background,
-            result,
-        }
+        Widget::Button(
+            Button{
+                title_text,
+                background,
+                result,
+                id,
+                focused: false,
+            }
+        )
     }
 
-    pub fn contains(&self, point: Vector2i) -> bool {
-        self.background.global_bounds().contains(Vector2f{
-            x: point.x as f32,
-            y: point.y as f32,
-        })
-    }
-
-    pub fn hover(&mut self, on: bool) {
-        if on {
-            self.background.set_outline_color(Color::BLUE);
-        } else {
-            self.background.set_outline_color(Color::WHITE);
-        }
-    }
-
-    pub fn focus(&mut self) {
-        self.background.set_outline_color(Color::RED);
-    }
-
-    pub fn click(&self) -> Option<T> {
-        Some(self.result.clone())
-    }
-
-    pub fn set_position(&mut self, position: (f32, f32)) {
-        self.background.set_position(position);
-        self.title_text.set_position(position);
-    }
 }
 
 impl<'a, T> Drawable for Button<'a, T> where T: Clone {
