@@ -30,7 +30,11 @@ use interfaces::{
     waiting_screen::{
         waiting_screen,
         WaitingScreenChoice,
-    }
+    },
+    game_join::{
+        game_join,
+        GameJoinChoice,
+    },
 };
 
 use client_state::ClientGamestate;
@@ -72,10 +76,8 @@ fn main() {
                     NameEntryChoice::Back => continue,
                     NameEntryChoice::Name(name) => {
                         join_game(Arc::clone(&gamestate), &name);
-                        println!("before loop start");
 
                         start_update_loop(Arc::clone(&gamestate));
-                        println!("loop started");
                         match waiting_screen(&mut window, &font, Arc::clone(&gamestate)) {
                             WaitingScreenChoice::Back => continue,
                             WaitingScreenChoice::Ready => {
@@ -88,7 +90,32 @@ fn main() {
                     },
                 };
             },
-            MainMenuChoice::JoinGame => {}
+            MainMenuChoice::JoinGame => {
+                match game_join(&mut window, &font) {
+                    GameJoinChoice::Back => continue,
+                    GameJoinChoice::Game(game_id) => {
+                        gamestate.write().unwrap().set_game(game_id);
+
+                        match name_entry(&mut window, &font) {
+                            NameEntryChoice::Back => continue,
+                            NameEntryChoice::Name(name) => {
+                                join_game(Arc::clone(&gamestate), &name);
+
+                                start_update_loop(Arc::clone(&gamestate));
+                                match waiting_screen(&mut window, &font, Arc::clone(&gamestate)) {
+                                    WaitingScreenChoice::Back => continue,
+                                    WaitingScreenChoice::Ready => {
+                                        match start_game(&mut window, Arc::clone(&gamestate)) {
+                                            GameResult::Menu => continue,
+                                            GameResult::Quit => break,
+                                        };
+                                    }
+                                };
+                            },
+                        };
+                    }
+                }
+            }
         }
     }
 }
@@ -97,7 +124,6 @@ fn new_game(gamestate: Arc<RwLock<ClientGamestate>>) {
     match http::new_game() {
         Ok(game_id) => {
             println!("{}", game_id);
-            let game_id = String::from("yes");
             let mut gamestate = gamestate.write().unwrap();
             gamestate.set_game(game_id);
         }

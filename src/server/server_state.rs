@@ -88,7 +88,8 @@ impl ServerState {
     }
 
     pub fn new_game(&mut self, _public: bool) -> String {
-        let uuid = "yes".to_string();//Uuid::new_v4().to_string();
+        // let uuid = "yes".to_string();//Uuid::new_v4().to_string();
+        let uuid = Uuid::new_v4().to_string()[..6].to_string();
         self.games.entry(uuid.clone()).or_insert(ServerGamestate::new());
         uuid
     }
