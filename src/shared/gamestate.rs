@@ -35,13 +35,13 @@ impl Gamestate {
         self.messages = vec![];
     }
 
-    pub fn add_room(&mut self, position: (i32, i32)) -> Option<&mut Room> {
+    pub fn add_room(&mut self, position: (i32, i32)) -> bool {
         if !self.map.room(position.0, position.1).is_none() {
-            return None;
+            return false;
         }
         self.map.add_room(position, Room::basic(position));
-        // self.remove_doors(position);
-        self.map.mut_room(position.0, position.1)
+        self.remove_doors(position);
+        true
     }
 
     pub fn remove_doors(&mut self, position: (i32, i32)) {
